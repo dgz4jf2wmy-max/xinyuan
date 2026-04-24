@@ -1,0 +1,145 @@
+import { PoolApplicationStatus, PlanPoolApplicationLedger } from '../../types/production-pool';
+import { ProductionTypeEnum } from '../../types/base-data';
+
+// 杜撰的生产计划池入池申请静态数据
+export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
+  {
+    id: 'app-001',
+    sequenceNumber: 1,
+    status: PoolApplicationStatus.PendingPlan,
+    productType: '再造烟叶',
+    productionType: ProductionTypeEnum.TobaccoRecipeFinished,
+    productName: '造纸法再造烟叶',
+    productCode: 'PRD-ZY-001',
+    customerName: 'A卷烟厂',
+    brandGrade: 'HT-1',
+    specification: '120mm',
+    unit: '吨',
+    requirements: [
+      { id: 'req-001-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 20, unit: '吨' }
+    ],
+    totalRequirementAmount: 20,
+    unitPriceExclTax: 12000,
+    unitPriceInclTax: 13560,
+    amountExclTax: 240000,
+    expectedCompletionDate: '2024-05-15',
+    deliveryDate: '2024-05-20',
+    deliveryLocation: '江苏省南京市江宁区A厂'
+  },
+  {
+    id: 'app-002',
+    sequenceNumber: 2,
+    status: PoolApplicationStatus.Cancelled,
+    productType: '再造梗丝',
+    productionType: ProductionTypeEnum.StemIndependentTrial,
+    productName: '普通再造梗丝',
+    productCode: 'PRD-GS-003',
+    customerName: 'C烟草集团',
+    brandGrade: 'GS-100',
+    specification: '常规',
+    unit: '吨',
+    requirements: [
+      { id: 'req-002-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 20, unit: '吨' },
+      { id: 'req-002-2', sequenceNumber: 2, versionNo: 'V1.1', requirementAmount: 30, unit: '吨' }
+    ],
+    totalRequirementAmount: 50,
+    unitPriceExclTax: 8000,
+    unitPriceInclTax: 9040,
+    amountExclTax: 400000,
+    expectedCompletionDate: '2024-04-30',
+    deliveryDate: '2024-05-05',
+    deliveryLocation: '浙江省杭州市C集团'
+  },
+  {
+    id: 'app-003',
+    sequenceNumber: 3,
+    status: PoolApplicationStatus.Planned,
+    productType: '香精香料',
+    productionType: ProductionTypeEnum.FlavorEntrusted,
+    productName: '花香型香精',
+    productCode: 'PRD-XJ-002',
+    customerName: 'B烟草工业公司',
+    brandGrade: 'XJ-M-1',
+    specification: '20kg/桶',
+    unit: '公斤',
+    requirements: [
+      { id: 'req-003-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 300, unit: '公斤' }
+    ],
+    totalRequirementAmount: 300,
+    unitPriceExclTax: 150000,
+    unitPriceInclTax: 169500,
+    amountExclTax: 45000000,
+    expectedCompletionDate: '2024-06-01',
+    deliveryDate: '2024-06-10',
+    deliveryLocation: '云南省昆明市B公司仓库'
+  },
+  {
+    id: 'app-004',
+    sequenceNumber: 4,
+    status: PoolApplicationStatus.Scheduled,
+    productType: '再造烟叶',
+    productionType: ProductionTypeEnum.TobaccoAgeing,
+    productName: '特级醇化烟叶',
+    productCode: 'PRD-ZY-008',
+    customerName: 'D中烟工业',
+    brandGrade: 'ZY-CH-01',
+    specification: '标准件',
+    unit: '吨',
+    requirements: [
+      { id: 'req-004-1', sequenceNumber: 1, versionNo: 'V2.0', requirementAmount: 15, unit: '吨' }
+    ],
+    totalRequirementAmount: 15,
+    unitPriceExclTax: 25000,
+    unitPriceInclTax: 28250,
+    amountExclTax: 375000,
+    expectedCompletionDate: '2024-07-20',
+    deliveryDate: '2024-07-25',
+    deliveryLocation: '四川省成都市D中烟二厂'
+  },
+  {
+    id: 'app-005',
+    sequenceNumber: 5,
+    status: PoolApplicationStatus.Completed,
+    productType: '香精香料',
+    productionType: ProductionTypeEnum.FlavorCentralizedMixing,
+    productName: '果香型香料',
+    productCode: 'PRD-XJ-009',
+    customerName: 'E卷烟总厂',
+    brandGrade: 'XJ-G-2',
+    specification: '10kg/桶',
+    unit: '公斤',
+    requirements: [
+      { id: 'req-005-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 50, unit: '公斤' }
+    ],
+    totalRequirementAmount: 50,
+    unitPriceExclTax: 80000,
+    unitPriceInclTax: 90400,
+    amountExclTax: 4000000,
+    expectedCompletionDate: '2024-03-10',
+    deliveryDate: '2024-03-12',
+    deliveryLocation: '广东省广州市E总厂区'
+  },
+  {
+    id: 'app-006',
+    sequenceNumber: 6,
+    status: PoolApplicationStatus.PendingPlan,
+    productType: '再造梗丝',
+    productionType: ProductionTypeEnum.StemRecipeSemi,
+    productName: '自制再造梗丝',
+    productCode: 'PRD-GS-022',
+    customerName: '鑫源公司自用',
+    brandGrade: 'GS-XY-P',
+    specification: '20kg/包',
+    unit: '吨',
+    requirements: [
+      { id: 'req-006-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 10, unit: '吨' }
+    ],
+    totalRequirementAmount: 10,
+    unitPriceExclTax: 6000,
+    unitPriceInclTax: 6780,
+    amountExclTax: 60000,
+    expectedCompletionDate: '2024-08-05',
+    deliveryDate: '2024-08-10',
+    deliveryLocation: '成品库'
+  }
+];

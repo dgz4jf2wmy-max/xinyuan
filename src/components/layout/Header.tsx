@@ -1,0 +1,107 @@
+import { Bell, Search, Maximize, Settings, UserCircle } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
+import { menuItems } from './Sidebar';
+import { mockMonthlyAgingPlans } from '../../data/plan/monthlyAgingPlanData';
+
+const getRouteInfo = (pathname: string) => {
+  if (pathname === '/') return { label: '首页' };
+  
+  // Search in menuItems first
+  for (const group of menuItems) {
+    if (group.children) {
+      const child = group.children.find(c => c.path === pathname);
+      if (child) {
+        return { parent: group.label, label: child.label };
+      }
+    } else if (group.path === pathname) {
+      return { label: group.label };
+    }
+  }
+
+  // Handle explicit non-menu known routes
+  const extraRouteMap: Record<string, { parent?: string, label: string }> = {
+    '/plan/annual/create': { parent: '计划管理', label: '年度产销计划编制' },
+    '/plan/monthly/create': { parent: '计划管理', label: '新增月度产销计划' },
+    '/plan/monthly/aging/create': { parent: '计划管理', label: '新增月度醇化计划' },
+  };
+  
+  if (extraRouteMap[pathname]) return extraRouteMap[pathname];
+
+  // Handle dynamic routes
+  if (pathname.startsWith('/plan/monthly/aging/detail/')) {
+    const id = pathname.split('/').pop();
+    const plan = mockMonthlyAgingPlans.find(p => p.sequenceNumber === Number(id));
+    return { parent: '计划管理', label: plan ? plan.planName : '2026年6月月度醇化计划' };
+  }
+  
+  if (pathname.startsWith('/plan/monthly/detail/')) {
+    return { parent: '月度产销计划', label: '鑫源公司2026年4月份产销计划' };
+  }
+  
+  if (pathname.startsWith('/plan/annual/detail/')) {
+    const id = pathname.split('/').pop();
+    let planName = '年度产销计划详情';
+    if (id?.includes('2026')) planName = '鑫源公司2026年年度产销计划';
+    else if (id?.includes('2025')) planName = '鑫源公司2025年年度产销计划';
+    else if (id?.includes('2024')) planName = '鑫源公司2024年年度产销计划';
+    else if (id?.includes('2023')) planName = '鑫源公司2023年年度产销计划';
+    else if (id?.includes('2022')) planName = '鑫源公司2022年年度产销计划';
+    return { parent: '计划管理', label: planName };
+  }
+  
+  if (pathname.startsWith('/plan/annual/adjust/')) {
+    return { parent: '计划管理', label: '年度产销计划调整' };
+  }
+
+  return { label: '未知页面' };
+};
+
+export function Header() {
+  const location = useLocation();
+  const currentRoute = getRouteInfo(location.pathname);
+
+  return (
+    <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+      <div className="flex items-center">
+        <div className="text-sm text-gray-500 flex items-center">
+          <Link to="/" className="hover:text-gray-900 transition-colors">首页</Link>
+          {currentRoute.parent && (
+            <>
+              <span className="mx-2">/</span>
+              <span>{currentRoute.parent}</span>
+            </>
+          )}
+          {location.pathname !== '/' && (
+            <>
+              <span className="mx-2">/</span>
+              <span className="text-gray-900">{currentRoute.label}</span>
+            </>
+          )}
+        </div>
+      </div>
+      
+      <div className="flex items-center space-x-4">
+        <div className="text-red-500 text-sm font-medium mr-4">
+          本平台为互联网非涉密平台，严禁处理、传输国家秘密、工作秘密
+        </div>
+        <button className="text-gray-500 hover:text-gray-700">
+          <Search className="w-5 h-5" />
+        </button>
+        <button className="text-gray-500 hover:text-gray-700 relative">
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+        </button>
+        <button className="text-gray-500 hover:text-gray-700">
+          <Maximize className="w-5 h-5" />
+        </button>
+        <button className="text-gray-500 hover:text-gray-700">
+          <Settings className="w-5 h-5" />
+        </button>
+        <div className="flex items-center space-x-2 cursor-pointer pl-2 border-l border-gray-200">
+          <UserCircle className="w-6 h-6 text-gray-400" />
+          <span className="text-sm font-medium text-gray-700">超级管理员</span>
+        </div>
+      </div>
+    </header>
+  );
+}
