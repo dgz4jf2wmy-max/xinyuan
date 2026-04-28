@@ -20,7 +20,7 @@ export default function PlanExecutionDashboard() {
     return Math.min(100, Math.round((actual / planned) * 100));
   };
 
-  const urgentRequests = mockProductionPoolData.filter(p => p.applicationType === '紧急' || p.isChanged === true);
+  const urgentRequests = mockProductionPoolData.filter(p => p.applicationType === '紧急');
 
   return (
     <div className="h-full w-full bg-[#f5f7fa] flex flex-col font-sans overflow-hidden">
@@ -78,9 +78,9 @@ export default function PlanExecutionDashboard() {
                       <td className="py-1.5 px-3">
                         <span className={cn(
                           "px-1.5 py-0.5 rounded text-[11px]",
-                          req.isChanged ? "bg-orange-100 text-orange-600" : "bg-red-100 text-red-600"
+                          "bg-red-100 text-red-600"
                         )}>
-                          {req.isChanged ? '变更' : req.applicationType}
+                          {req.applicationType}
                         </span>
                       </td>
                       <td className="py-1.5 px-3 font-mono text-[#606266]">{req.documentNo}</td>

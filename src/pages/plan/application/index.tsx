@@ -104,7 +104,6 @@ export default function PlanPoolApplicationList() {
             <TableRow>
               <TableHead className="w-[60px] text-center">序号</TableHead>
               <TableHead>单据编号</TableHead>
-              <TableHead>变更表示</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>申请类型</TableHead>
               <TableHead>产品类型</TableHead>
@@ -114,12 +113,10 @@ export default function PlanPoolApplicationList() {
               <TableHead>客户名称</TableHead>
               <TableHead>牌号</TableHead>
               <TableHead>规格</TableHead>
+              <TableHead>单位</TableHead>
               <TableHead className="text-right">需求量</TableHead>
               <TableHead className="text-right">初始需求量</TableHead>
-              <TableHead>单位</TableHead>
-              <TableHead className="text-right">无税单价</TableHead>
-              <TableHead className="text-right">含税单价</TableHead>
-              <TableHead className="text-right">无税金额</TableHead>
+              <TableHead className="text-right">申请完工量</TableHead>
               <TableHead>期望完成时间</TableHead>
               <TableHead>到货时间</TableHead>
               <TableHead>到货地点</TableHead>
@@ -131,7 +128,6 @@ export default function PlanPoolApplicationList() {
               <TableRow key={row.id}>
                 <TableCell className="text-center">{row.sequenceNumber}</TableCell>
                 <TableCell>{row.documentNo}</TableCell>
-                <TableCell>{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                 <TableCell>
                   <span className={clsx(
                     row.status === PoolApplicationStatus.PendingPlan && "text-[#409eff]",
@@ -158,6 +154,7 @@ export default function PlanPoolApplicationList() {
                 <TableCell>{row.customerName}</TableCell>
                 <TableCell>{row.brandGrade}</TableCell>
                 <TableCell>{row.specification}</TableCell>
+                <TableCell>{row.unit}</TableCell>
                 <TableCell className="text-right">
                   <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
                     {row.totalRequirementAmount?.toFixed(2)}
@@ -189,10 +186,7 @@ export default function PlanPoolApplicationList() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
-                <TableCell>{row.unit}</TableCell>
-                <TableCell className="text-right">{row.unitPriceExclTax?.toFixed(2) || '--'}</TableCell>
-                <TableCell className="text-right">{row.unitPriceInclTax?.toFixed(2) || '--'}</TableCell>
-                <TableCell className="text-right">{row.amountExclTax?.toFixed(2) || '--'}</TableCell>
+                <TableCell className="text-right">{row.applyCompletionAmount?.toFixed(2) || '--'}</TableCell>
                 <TableCell>{row.expectedCompletionDate || '--'}</TableCell>
                 <TableCell>{row.deliveryDate || '--'}</TableCell>
                 <TableCell>{row.deliveryLocation || '--'}</TableCell>

@@ -1,18 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '../../../../components/ui/button';
 import { Modal } from '../../../../components/ui/modal';
-import { ProductInfo } from '../../../../types/plan';
 import { mockCustomerData } from '../../../../data/customerData';
-import { ProductSelector } from '../../../plan/components/ProductSelector';
+import { ProductInfo } from '../../../../types/plan';
 import { RestrictedProductionTypeByProductCategory } from '../../../../types/base-data';
-
-interface RequirementVersion {
-  id: string;
-  sequenceNumber: number;
-  versionNo: string;
-  requirementAmount: number;
-  unit: string;
-}
+import { ProductSelector } from '../../../plan/components/ProductSelector';
+import { Trash2, Plus } from 'lucide-react';
 
 interface NonPurchaseOrderApplicationModalProps {
   isOpen: boolean;
@@ -22,85 +15,104 @@ interface NonPurchaseOrderApplicationModalProps {
 
 export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: NonPurchaseOrderApplicationModalProps) {
   const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<ProductInfo | null>(null);
   
-  const [applicationType, setApplicationType] = useState<string>('普通');
-  const [customerName, setCustomerName] = useState<string>('');
-  const [productionType, setProductionType] = useState<string>('');
-  const [deliveryDate, setDeliveryDate] = useState<string>('');
-  const [deliveryLocation, setDeliveryLocation] = useState<string>('');
-  const [expectedCompletionDate, setExpectedCompletionDate] = useState<string>('');
-  
-  const [requirements, setRequirements] = useState<RequirementVersion[]>([
-    { id: '1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 0, unit: '吨' }
-  ]);
+  // Details State
+  const [details, setDetails] = useState<any[]>([]);
 
-  const applicantName = '当前用户';
-  const applicantDepartment = '计划部';
+  const salesperson = '当前用户';
+  const department = '计划部';
 
-  const totalRequirementAmount = requirements.reduce((sum, req) => {
-    let amount = req.requirementAmount || 0;
-    if (req.unit === '公斤') amount = amount / 1000;
-    return sum + amount;
-  }, 0);
-
-  const amountExclTax = selectedProduct?.unitPriceExclTax ? totalRequirementAmount * selectedProduct.unitPriceExclTax : 0;
-
-  const handleProductSelect = (products: ProductInfo[]) => {
-    if (products.length > 0) {
-      setSelectedProduct(products[0]);
-      setProductionType('');
-    }
+  const handleProductSelect = (selectedProducts: ProductInfo[]) => {
+    const newDetails = selectedProducts.map(p => ({
+      id: Math.random().toString(36).substr(2, 9),
+      productInfo: p,
+      applicationType: '普通',
+      productionType: '',
+      customerName: '',
+      requirements: [{ id: Math.random().toString(36).substr(2, 9), sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 0, unit: '吨' }],
+      expectedCompletionDate: '',
+      deliveryDate: '',
+      deliveryLocation: '',
+    }));
+    setDetails(prev => [...prev, ...newDetails]);
     setIsProductSelectorOpen(false);
+  };
+
+  const handleDetailChange = (id: string, field: string, value: any) => {
+    setDetails(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d));
+  };
+
+  const handleRequirementChange = (detailId: string, amount: number) => {
+    setDetails(prev => prev.map(d => {
+      if (d.id === detailId) {
+        return {
+          ...d,
+          requirements: [{ ...d.requirements[0], requirementAmount: amount }]
+        };
+      }
+      return d;
+    }));
+  };
+
+  const removeDetail = (id: string) => {
+    setDetails(prev => prev.filter(d => d.id !== id));
   };
 
   const getProductionTypes = (productType: string) => {
     return RestrictedProductionTypeByProductCategory[productType] || [];
   };
 
-  const handleUpdateRequirement = (id: string, field: 'requirementAmount' | 'unit', value: any) => {
-    setRequirements(requirements.map(req => req.id === id ? { ...req, [field]: value } : req));
-  };
-
-  const isCustomerDisabled = productionType === '再造烟叶配方生产（自制半成品）' || productionType === '再造梗丝配方生产（自制半成品）';
+  const isCustomerDisabled = (productionType: string) => {
+    return productionType === '再造烟叶配方生产（自制半成品）' || productionType === '再造梗丝配方生产（自制半成品）';
+  }
 
   const handleSubmit = () => {
-    if (!selectedProduct || !productionType || (!isCustomerDisabled && !customerName) || totalRequirementAmount <= 0) {
-      alert("请填写完整的必填项信息");
+    if (details.length === 0) {
+      alert("请至少添加一条产品明细");
       return;
     }
+    for (const d of details) {
+      if (!d.applicationType || !d.productionType || (!isCustomerDisabled(d.productionType) && !d.customerName) || !d.requirements[0].requirementAmount) {
+         alert(`请将明细（${d.productInfo.productName}）的必填信息填写完整`);
+         return;
+      }
+    }
+
+    const formDatas = details.map(d => {
+      const amtExcl = (d.requirements[0].requirementAmount || 0) * (d.productInfo.unitPriceExclTax || 0);
+      return {
+        productType: d.productInfo.productType,
+        productionType: d.productionType,
+        productName: d.productInfo.productName,
+        productCode: d.productInfo.productCode,
+        brandGrade: d.productInfo.brandGrade,
+        specification: d.productInfo.specification,
+        customerName: isCustomerDisabled(d.productionType) ? '' : d.customerName,
+        totalRequirementAmount: d.requirements[0].requirementAmount,
+        requirements: d.requirements,
+        unit: '吨',
+        unitPriceExclTax: d.productInfo.unitPriceExclTax,
+        unitPriceInclTax: d.productInfo.unitPriceInclTax,
+        amountExclTax: amtExcl,
+        expectedCompletionDate: d.expectedCompletionDate,
+        deliveryDate: d.deliveryDate,
+        deliveryLocation: d.deliveryLocation,
+        applicantName: salesperson,
+        applicantDepartment: department,
+        applicationType: d.applicationType,
+        isPO: false
+      };
+    });
     
-    const formData = {
-      productType: selectedProduct.productType,
-      productionType,
-      productName: selectedProduct.productName,
-      productCode: selectedProduct.productCode,
-      brandGrade: selectedProduct.brandGrade,
-      specification: selectedProduct.specification,
-      unit: '吨', // normalized output
-      unitPriceExclTax: selectedProduct.unitPriceExclTax,
-      unitPriceInclTax: selectedProduct.unitPriceInclTax,
-      amountExclTax,
-      customerName: isCustomerDisabled ? '' : customerName,
-      totalRequirementAmount,
-      requirements,
-      deliveryDate,
-      deliveryLocation,
-      expectedCompletionDate,
-      applicantName,
-      applicantDepartment,
-      isPO: false,
-      applicationType
-    };
-    
-    onSubmit(formData);
+    // Fire all submits sequentially or handle array based on parent
+    formDatas.forEach(data => onSubmit(data));
     onClose();
   };
 
   const footer = (
     <>
       <Button variant="outline" onClick={onClose}>取消</Button>
-      <Button className="bg-[#1890ff] hover:bg-[#40a9ff] text-white" onClick={handleSubmit}>确认发起</Button>
+      <Button className="bg-[#1890ff] hover:bg-[#40a9ff] text-white" onClick={handleSubmit}>生成并发起申请</Button>
     </>
   );
 
@@ -109,184 +121,159 @@ export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: 
       isOpen={isOpen}
       onClose={onClose}
       title="计划池入池申请 - 非采购订单需求"
-      maxWidth="4xl"
+      maxWidth="full"
+      className="md:max-w-[95vw]"
       footer={footer}
     >
-      <div className="flex flex-col px-4 py-4 gap-0 bg-white min-h-[500px]">
-        {/* Section 1: Product Selection */}
-        <div className="w-full border-b border-gray-100 pb-6 mb-6">
-            <h3 className="font-semibold text-gray-800 mb-4 text-[15px] relative pl-2 before:content-[''] before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-blue-500 before:rounded-full">产品信息</h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
-              <div className="col-span-2 lg:col-span-2">
-                <label className="block text-sm font-medium tracking-wide text-gray-700 mb-1">
-                  <span className="text-red-500 mr-1">*</span>产品名称
-                </label>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    readOnly 
-                    value={selectedProduct?.productName || ''} 
-                    placeholder="请选择产品"
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-700" 
-                  />
-                  <Button variant="outline" onClick={() => setIsProductSelectorOpen(true)}>选择</Button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">产品编号</label>
-                <input type="text" readOnly value={selectedProduct?.productCode || ''} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">产品类型</label>
-                <input type="text" readOnly value={selectedProduct?.productType || ''} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">牌号</label>
-                <input type="text" readOnly value={selectedProduct?.brandGrade || ''} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">规格</label>
-                <input type="text" readOnly value={selectedProduct?.specification || ''} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Application Details */}
-          <div className="w-full border-b border-gray-100 pb-6 mb-6">
-            <h3 className="font-semibold text-gray-800 mb-4 text-[15px] relative pl-2 before:content-[''] before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-blue-500 before:rounded-full">需求信息</h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-700 mb-1">
-                  <span className="text-red-500 mr-1">*</span>申请类型
-                </label>
-                <select 
-                  value={applicationType}
-                  onChange={(e) => setApplicationType(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
-                >
-                  <option value="普通">普通</option>
-                  <option value="紧急">紧急</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-700 mb-1">
-                  <span className="text-red-500 mr-1">*</span>生产类型
-                </label>
-                <select 
-                  value={productionType}
-                  onChange={(e) => setProductionType(e.target.value)}
-                  disabled={!selectedProduct}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50"
-                >
-                  <option value="">请选择</option>
-                  {selectedProduct && getProductionTypes(selectedProduct.productType).map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-span-2 lg:col-span-2">
-                <label className="block text-sm font-medium tracking-wide text-gray-700 mb-1">
-                  {!isCustomerDisabled && <span className="text-red-500 mr-1">*</span>}客户名称
-                </label>
-                <select 
-                  value={isCustomerDisabled ? '' : customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  disabled={isCustomerDisabled}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
-                >
-                  <option value="">请选择客户</option>
-                  {mockCustomerData.map(c => (
-                    <option key={c.id} value={c.customerName}>{c.customerName}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-700 mb-1">
-                  <span className="text-red-500 mr-1">*</span>需求量
-                </label>
-                <input 
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={requirements[0].requirementAmount || ''}
-                  onChange={(e) => handleUpdateRequirement(requirements[0].id, 'requirementAmount', parseFloat(e.target.value) || 0)}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-blue-500" 
-                  placeholder={`输入需求量 (${requirements[0].versionNo})`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">
-                  单位 
-                </label>
-                <input type="text" readOnly value="吨" className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">期望完成时间</label>
-                <input 
-                  type="date"
-                  value={expectedCompletionDate}
-                  onChange={(e) => setExpectedCompletionDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">到货时间</label>
-                <input 
-                  type="date"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500" 
-                />
-              </div>
-              <div className="col-span-2 lg:col-span-4">
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">到货地点</label>
-                <input 
-                  type="text" 
-                  value={deliveryLocation}
-                  onChange={(e) => setDeliveryLocation(e.target.value)}
-                  placeholder="请输入详细的到货地点"
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500" 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Financials & Process Info */}
-          <div className="w-full">
-            <h3 className="font-semibold text-gray-800 mb-4 text-[15px] relative pl-2 before:content-[''] before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-blue-500 before:rounded-full">其他辅助信息</h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">无税单价</label>
-                <input type="text" readOnly value={selectedProduct?.unitPriceExclTax?.toFixed(2) || '0.00'} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">含税单价</label>
-                <input type="text" readOnly value={selectedProduct?.unitPriceInclTax?.toFixed(2) || '0.00'} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">无税金额</label>
-                <input type="text" readOnly value={amountExclTax.toFixed(2)} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm font-semibold text-gray-800" />
-              </div>
-              <div className="hidden lg:block"></div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">申请人</label>
-                <input type="text" readOnly value={applicantName} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium tracking-wide text-gray-600 mb-1">申请人部门</label>
-                <input type="text" readOnly value={applicantDepartment} className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-sm text-gray-500" />
-              </div>
-            </div>
-          </div>
+      <div className="flex flex-col px-4 py-4 bg-[#f8f9fc] min-h-[500px]">
+        {/* 详细信息 */}
+        <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex flex-col flex-1">
+           <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-gray-800 text-[15px] relative pl-2 before:content-[''] before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-blue-500 before:rounded-full">需求明细信息</h3>
+              <Button variant="primary" size="sm" onClick={() => setIsProductSelectorOpen(true)}>
+                <Plus className="w-3.5 h-3.5 mr-1" /> 添加需求
+              </Button>
+           </div>
+           
+           <div className="overflow-x-auto border border-gray-200 rounded pb-32">
+             <table className="w-full text-left border-collapse whitespace-nowrap min-w-max">
+                <thead className="bg-[#f5f7fa]">
+                  <tr>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r w-12 text-center sticky left-0 bg-[#f5f7fa] z-10">操作</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r"><span className="text-red-500 mr-1">*</span>申请类型</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">产品类型</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r"><span className="text-red-500 mr-1">*</span>生产类型</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">产品名称</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">产品编号</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">牌号</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">规格</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r"><span className="text-red-500 mr-1">*</span>客户名称</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r"><span className="text-red-500 mr-1">*</span>需求量(吨)</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">期望完成时间</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">到货时间</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">到货地点</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">无税单价</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">含税单价</th>
+                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200">无税金额</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {details.length === 0 ? (
+                    <tr><td colSpan={16} className="py-8 text-center text-gray-400 text-sm">点击右上角添加需求明细</td></tr>
+                  ) : details.map((d) => {
+                     const amtExcl = (d.requirements[0].requirementAmount || 0) * (d.productInfo.unitPriceExclTax || 0);
+                     const disabledCustomer = isCustomerDisabled(d.productionType);
+                     
+                     return (
+                        <tr key={d.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                          <td className="py-2 px-3 border-r border-gray-200 text-center sticky left-0 bg-white z-10 group-hover:bg-blue-50/30">
+                            <button 
+                              onClick={() => removeDetail(d.id)}
+                              className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
+                              title="删除此行"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <select 
+                                value={d.applicationType}
+                                onChange={(e) => handleDetailChange(d.id, 'applicationType', e.target.value)}
+                                className="w-[80px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
+                             >
+                               <option value="普通">普通</option>
+                               <option value="紧急">紧急</option>
+                             </select>
+                          </td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-600 bg-gray-50">{d.productInfo.productType}</td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <select 
+                                value={d.productionType}
+                                onChange={(e) => handleDetailChange(d.id, 'productionType', e.target.value)}
+                                className="w-[140px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
+                             >
+                                <option value="">请选择</option>
+                                {getProductionTypes(d.productInfo.productType).map(t => (
+                                  <option key={t} value={t}>{t}</option>
+                                ))}
+                             </select>
+                          </td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-600 bg-gray-50">{d.productInfo.productName}</td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-600 bg-gray-50">{d.productInfo.productCode}</td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-600 bg-gray-50">{d.productInfo.brandGrade || '-'}</td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-600 bg-gray-50">{d.productInfo.specification || '-'}</td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <select 
+                                value={disabledCustomer ? '' : d.customerName}
+                                onChange={(e) => handleDetailChange(d.id, 'customerName', e.target.value)}
+                                disabled={disabledCustomer}
+                                className="w-[140px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                             >
+                                <option value="">{disabledCustomer ? '-' : '请选择客户'}</option>
+                                {mockCustomerData.map(c => (
+                                  <option key={c.id} value={c.customerName}>{c.customerName}</option>
+                                ))}
+                             </select>
+                          </td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <input 
+                               type="number"
+                               min="0"
+                               step="0.01"
+                               value={d.requirements[0].requirementAmount || ''}
+                               onChange={(e) => handleRequirementChange(d.id, parseFloat(e.target.value) || 0)}
+                               className="w-[90px] border border-gray-300 rounded px-2 py-1 text-[13px] font-mono outline-none focus:border-blue-500 text-right bg-white"
+                               placeholder="数值"
+                             />
+                          </td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <input 
+                               type="date"
+                               value={d.expectedCompletionDate}
+                               onChange={(e) => handleDetailChange(d.id, 'expectedCompletionDate', e.target.value)}
+                               className="w-[120px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
+                             />
+                          </td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <input 
+                               type="date"
+                               value={d.deliveryDate}
+                               onChange={(e) => handleDetailChange(d.id, 'deliveryDate', e.target.value)}
+                               className="w-[120px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
+                             />
+                          </td>
+                          <td className="py-2 px-2 border-r border-gray-200">
+                             <input 
+                               type="text"
+                               value={d.deliveryLocation}
+                               onChange={(e) => handleDetailChange(d.id, 'deliveryLocation', e.target.value)}
+                               className="w-[160px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
+                               placeholder="到货地点(选填)"
+                             />
+                          </td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-500 text-right bg-gray-50">
+                            {d.productInfo.unitPriceExclTax?.toFixed(2) || '0.00'}
+                          </td>
+                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-500 text-right bg-gray-50">
+                            {d.productInfo.unitPriceInclTax?.toFixed(2) || '0.00'}
+                          </td>
+                          <td className="py-2 px-3 text-[13px] font-medium text-gray-800 text-right bg-gray-50">
+                            {amtExcl.toFixed(2)}
+                          </td>
+                        </tr>
+                     );
+                  })}
+                </tbody>
+             </table>
+           </div>
         </div>
+      </div>
       
       <ProductSelector 
         isOpen={isProductSelectorOpen} 
         onClose={() => setIsProductSelectorOpen(false)} 
         onConfirm={handleProductSelect} 
-        multiple={false}
+        multiple={true}
       />
     </Modal>
   );

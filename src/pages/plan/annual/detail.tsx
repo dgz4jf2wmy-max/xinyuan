@@ -345,7 +345,7 @@ export default function AnnualPlanDetailView() {
                 <TableHead className="w-16 text-center text-[#303133] font-bold">序号</TableHead>
                 <TableHead className="w-24 text-center text-[#303133] font-bold">产品类型</TableHead>
                 <TableHead className="w-40 text-center text-[#303133] font-bold">客户名称</TableHead>
-                <TableHead className="w-40 text-center text-[#303133] font-bold">产品型号</TableHead>
+                <TableHead className="w-40 text-center text-[#303133] font-bold">牌号</TableHead>
                 <TableHead className="w-28 text-center text-[#409eff] font-bold">预计销售量</TableHead>
                 {!isInitialVersionView && (
                   <>
@@ -372,7 +372,7 @@ export default function AnnualPlanDetailView() {
                         <TableCell rowSpan={row.rowSpanCustomer} className="text-center bg-white">{row.data.customerName}</TableCell>
                       )}
                       <TableCell className="text-center text-[#303133]">
-                        {row.data.productCode}
+                        {row.data.brandGrade || '-'}
                       </TableCell>
                       <TableCell className="text-center align-middle">
                         <div className={clsx("text-[#409eff]", isComparing && "font-bold mb-1")}>

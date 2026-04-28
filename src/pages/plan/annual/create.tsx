@@ -99,6 +99,13 @@ export default function AnnualPlanCreate() {
     handleDetailChange(index, 'unitPriceExclTax', mockFetchedPrice.toString());
   };
 
+  // 删除数据行
+  const handleDeleteRow = (index: number) => {
+    const newDetails = [...details];
+    newDetails.splice(index, 1);
+    setDetails(newDetails);
+  };
+
   // 动态计算统计数据
   const statistics = useMemo<AnnualPlanStatistics>(() => {
     const stats: AnnualPlanStatistics = {
@@ -303,7 +310,7 @@ export default function AnnualPlanCreate() {
                 <TableHead className="w-16 text-center text-[#303133] font-bold">序号</TableHead>
                 <TableHead className="w-24 text-center text-[#303133] font-bold">产品类型</TableHead>
                 <TableHead className="w-40 text-center text-[#303133] font-bold">客户名称</TableHead>
-                <TableHead className="w-40 text-center text-[#303133] font-bold">产品型号</TableHead>
+                <TableHead className="w-40 text-center text-[#303133] font-bold">牌号</TableHead>
                 <TableHead className="w-28 text-center text-[#409eff] font-bold">预计销售量</TableHead>
                 <TableHead className="w-28 text-center text-[#303133] font-bold">预计生产量</TableHead>
                 <TableHead className="w-32 text-center text-[#303133] font-bold">销售单价元/公斤<br/>(不含税)</TableHead>
@@ -325,14 +332,23 @@ export default function AnnualPlanCreate() {
                       )}
                       <TableCell>
                         <div className="flex items-center justify-between group">
-                          <span>{row.data.productCode}</span>
-                          <button 
-                            className="text-[#409eff] opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-blue-50 rounded"
-                            onClick={() => { setProductModalMode('single'); setEditingIndex(row.originalIndex); setIsProductModalOpen(true); }}
-                            title="更换产品"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                          </button>
+                          <span>{row.data.brandGrade || '-'}</span>
+                          <div className="flex items-center">
+                            <button 
+                              className="text-[#409eff] opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-blue-50 rounded"
+                              onClick={() => { setProductModalMode('single'); setEditingIndex(row.originalIndex); setIsProductModalOpen(true); }}
+                              title="更换产品"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              className="text-[#f56c6c] opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded"
+                              onClick={() => handleDeleteRow(row.originalIndex)}
+                              title="删除产品"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="p-1">

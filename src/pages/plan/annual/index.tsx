@@ -114,10 +114,6 @@ export default function AnnualPlanIndex() {
         <Button variant="primary" onClick={() => navigate('/plan/annual/create')}>
           <Plus className="w-3.5 h-3.5 mr-1" /> 计划编制
         </Button>
-        {/* 需求 PM-01-02-04: 中期调整、数据调整 */}
-        <Button variant="primary">
-          <Edit className="w-3.5 h-3.5 mr-1" /> 计划调整
-        </Button>
       </div>
 
       <div className="flex-1 overflow-auto flex flex-col border border-[#ebeef5] rounded-sm">

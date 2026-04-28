@@ -151,13 +151,13 @@ export type ProductionPlanPoolApplication = PlanPoolPurchaseOrderDetail;
 export interface PlanPoolPurchaseOrderBase {
   id: string; // 唯一标识
   
-  /** 订单类型: 字符(50), 只读, 普通｜紧急 */
+  /** 订单类型: 字符(50), 必填, 普通｜紧急 */
   orderType: string;
   
-  /** 订单日期: 时间(yyyy-mm-dd), 只读 */
+  /** 订单日期: 时间(yyyy-mm-dd), 必填 */
   orderDate: string;
   
-  /** 客户: 字符(50), 只读, 关联客户台账 */
+  /** 客户: 字符(50), 必填, 关联客户台账 */
   customer: string;
   
   /** 业务员: 字符(20), 只读, 当前用户 */
@@ -175,8 +175,8 @@ export interface PlanPoolPurchaseOrderBase {
   /** 总结税合计: 数字(.00), 只读, 计划池入池申请-含税单价总和 */
   totalAmountInclTax: number;
   
-  /** 备注: 字符(500), 只读 */
-  remarks: string;
+  /** 备注: 字符(500), 选填 */
+  remarks?: string;
   
   /** 关联的详细信息列表 */
   details?: PlanPoolPurchaseOrderDetail[];
@@ -308,9 +308,6 @@ export interface ProductionPlanPool {
    */
   documentNo: string;
   
-  /** 变更表示: 布尔, 只读, -｜变更 */
-  isChanged: boolean;
-  
   /** 状态: 字符(10), 只读，待计划｜已取消 */
   status: PoolApplicationStatus | string;
   
@@ -327,7 +324,7 @@ export interface ProductionPlanPool {
    * 生产类型: 字符(20), 只读 
    * 关联：《生产类型》中的所有生产类型
    */
-  productionType: ProductionType;
+  productionType: ProductionType | string;
   
   /** 产品名称: 字符(50), 只读，规则：通过牌号关联显示 */
   productName: string;
@@ -361,15 +358,6 @@ export interface ProductionPlanPool {
   /** 初始需求量: 数字(.00), 只读, 需要记录初次申请时的需求量 */
   initialRequirementAmount: number;
   
-  /** 无税单价: 数字(.00), 只读，关联：拉取财税系统内的单价 */
-  unitPriceExclTax?: number;
-  
-  /** 含税单价: 数字(.00), 只读，关联：拉取财税系统内的单价 */
-  unitPriceInclTax?: number;
-  
-  /** 无税金额: 数字(.00), 只读，关联：拉取财税系统内的金额 */
-  amountExclTax?: number;
-  
   /** 期望完成时间: 时间(yyyy-mm-dd), 选填 */
   expectedCompletionDate?: string;
   
@@ -380,13 +368,16 @@ export interface ProductionPlanPool {
   deliveryLocation?: string;
 
   /** 采购订单: 字符(50), 只读, 关联：ncc销售订单号 */
-  purchaseOrder: string;
+  purchaseOrder?: string;
 
-  /** 申请人: 数字(.00), 只读 */
-  applicantName: string | number;
+  /** 申请人: 字符(50), 只读 */
+  applicantName?: string;
   
-  /** 申请人部门: 数字(.00), 只读 */
-  applicantDepartment: string | number;
+  /** 申请人部门: 字符(50), 只读 */
+  applicantDepartment?: string;
+  
+  // Note: Optional transient UI fields removed
+  isChanged?: boolean;
 }
 
 /**
@@ -407,9 +398,6 @@ export interface PlanPoolApplicationLedger {
    * 流水号：3位（例如001）
    */
   documentNo: string;
-  
-  /** 变更表示: 布尔, 只读, -｜变更 */
-  isChanged: boolean;
   
   /** 状态: 字符(10), 只读，待计划｜已取消｜已计划｜已排产｜已完成 */
   status: PoolApplicationStatus | string;
@@ -461,14 +449,8 @@ export interface PlanPoolApplicationLedger {
   /** 初始需求量: 数字(.00), 只读, 需要记录初次申请时的需求量 */
   initialRequirementAmount: number;
   
-  /** 无税单价: 数字(.00), 只读，关联：拉取财税系统内的单价 */
-  unitPriceExclTax?: number;
-  
-  /** 含税单价: 数字(.00), 只读，关联：拉取财税系统内的单价 */
-  unitPriceInclTax?: number;
-  
-  /** 无税金额: 数字(.00), 只读，规则：无税单价*需求量 */
-  amountExclTax?: number;
+  /** 申请完工量: 数字(.00), 只读, 规则：需要基于包装规格进行转化，还原产量 */
+  applyCompletionAmount?: number;
   
   /** 期望完成时间: 时间(yyyy-mm-dd), 选填 */
   expectedCompletionDate?: string;
@@ -480,11 +462,8 @@ export interface PlanPoolApplicationLedger {
   deliveryLocation?: string;
 
   /** 采购订单: 字符(50), 只读, 关联：ncc销售订单号 */
-  purchaseOrder: string;
-
-  /** 申请人: 字符(50), 选填 (由于月度产销明细要求关联此类，此处恢复该字段定义) */
-  applicantName?: string;
+  purchaseOrder?: string;
   
-  /** 申请人部门: 字符(50), 选填 */
-  applicantDepartment?: string;
+  // Note: Optional transient UI fields removed
+  isChanged?: boolean;
 }

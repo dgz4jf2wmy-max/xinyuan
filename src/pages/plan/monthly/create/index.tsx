@@ -250,9 +250,9 @@ export default function MonthlyProductionPlanCreate() {
               specification: item.specification,
               requirementAmount: item.totalRequirementAmount,
               unit: item.unit,
-              unitPriceExclTax: item.unitPriceExclTax,
-              unitPriceInclTax: item.unitPriceInclTax,
-              amountExclTax: item.unitPriceExclTax * item.totalRequirementAmount,
+              unitPriceExclTax: 0,
+              unitPriceInclTax: 0,
+              amountExclTax: 0,
               expectedCompletionDate: item.expectedCompletionDate,
               deliveryDate: item.deliveryDate,
               deliveryLocation: item.deliveryLocation,
@@ -302,7 +302,9 @@ export default function MonthlyProductionPlanCreate() {
     const poolItemsToReturn = detailsToReturn.map(d => ({
        id: d.applicationLedgerId || d.id,
        sequenceNumber: pendingPool.length + 1,
+       documentNo: '',
        status: '待计划',
+       applicationType: '普通',
        productType: d.productType,
        productionType: d.productionType,
        productName: d.productName,
@@ -313,12 +315,13 @@ export default function MonthlyProductionPlanCreate() {
        unit: d.unit,
        requirements: [],
        totalRequirementAmount: d.requirementAmount,
-       unitPriceExclTax: d.unitPriceExclTax,
-       unitPriceInclTax: d.unitPriceInclTax,
-       amountExclTax: d.amountExclTax,
+       initialRequirementAmount: d.requirementAmount,
+       expectedCompletionDate: d.expectedCompletionDate,
        deliveryDate: d.deliveryDate,
        deliveryLocation: d.deliveryLocation,
-       expectedCompletionDate: d.expectedCompletionDate
+       purchaseOrder: '',
+       applicantName: d.applicantName || '',
+       applicantDepartment: d.applicantDepartment || '',
     } as ProductionPlanPool));
 
     setPendingPool([...pendingPool, ...poolItemsToReturn]);

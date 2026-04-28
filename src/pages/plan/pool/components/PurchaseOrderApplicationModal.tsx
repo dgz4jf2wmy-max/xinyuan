@@ -17,10 +17,10 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
   const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false);
   
   // Base Info State
-  const [orderType] = useState('普通');
-  const [customer] = useState('示例客户有限公司');
-  const [remarks] = useState('同步采购订单备注信息');
-  const orderDate = new Date().toISOString().split('T')[0];
+  const [orderType, setOrderType] = useState('普通');
+  const [customer, setCustomer] = useState(mockCustomerData[0]?.customerName || '');
+  const [remarks, setRemarks] = useState('');
+  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
   const salesperson = '当前用户';
   const department = '营销部';
   const currency = '人民币';
@@ -105,11 +105,10 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
         productCode: d.productInfo.productCode,
         brandGrade: d.productInfo.brandGrade,
         specification: d.productInfo.specification,
-        customerName: '湖南中烟',
+        customerName: customer,
         totalRequirementAmount: d.requirements[0].requirementAmount,
         requirements: d.requirements,
         unit: '吨',
-        purchaseOrder: 'PO-20260427-001', // simulated generated PO
         unitPriceExclTax: d.productInfo.unitPriceExclTax,
         unitPriceInclTax: d.productInfo.unitPriceInclTax,
         amountExclTax: amtExcl,
@@ -118,7 +117,9 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
         deliveryLocation: d.deliveryLocation,
         applicantName: salesperson,
         applicantDepartment: department,
-        applicationType: '普通',
+        applicationType: orderType,
+        remarks: remarks,
+        orderDate: orderDate,
         isPO: true
       };
     });
@@ -142,7 +143,8 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
       isOpen={isOpen}
       onClose={onClose}
       title="计划池入池申请 - 采购订单类"
-      maxWidth="5xl"
+      maxWidth="full"
+      className="md:max-w-[95vw]"
       footer={footer}
     >
       <div className="flex flex-col px-4 py-4 gap-4 bg-[#f8f9fc] min-h-[500px]">
@@ -151,16 +153,36 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
            <h3 className="font-semibold text-gray-800 mb-4 text-[15px] relative pl-2 before:content-[''] before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-blue-500 before:rounded-full">订单基础信息</h3>
            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">订单类型</label>
-                <input type="text" readOnly value="普通" className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1.5 text-sm text-gray-500" />
+                <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>订单类型</label>
+                <select 
+                  value={orderType} 
+                  onChange={(e) => setOrderType(e.target.value)} 
+                  className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500"
+                >
+                  <option value="普通">普通</option>
+                  <option value="紧急">紧急</option>
+                </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">订单日期</label>
-                <input type="text" readOnly value={orderDate} className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1.5 text-sm text-gray-500" />
+                <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>订单日期</label>
+                <input 
+                  type="date" 
+                  value={orderDate} 
+                  onChange={(e) => setOrderDate(e.target.value)} 
+                  className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500" 
+                />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">客户</label>
-                <input type="text" readOnly value="湖南中烟" className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1.5 text-sm text-gray-500" />
+                <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>客户</label>
+                <select 
+                  value={customer} 
+                  onChange={(e) => setCustomer(e.target.value)} 
+                  className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500"
+                >
+                  {mockCustomerData.map(c => (
+                    <option key={c.id} value={c.customerName}>{c.customerName}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">业务员</label>
@@ -186,9 +208,11 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                 <label className="block text-xs font-medium text-gray-600 mb-1">备注</label>
                 <input 
                   type="text" 
-                  readOnly
-                  value="同步采购订单备注信息..."
-                  className="w-full border border-gray-200 bg-gray-50 text-gray-500 rounded px-2 py-1.5 text-sm outline-none" 
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  placeholder="请输入备注说明（选填）"
+                  maxLength={500}
+                  className="w-full border border-gray-300 bg-white text-gray-700 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" 
                 />
               </div>
            </div>
@@ -209,7 +233,6 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                   <tr>
                     <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r w-12 text-center sticky left-0 bg-[#f5f7fa] z-10">操作</th>
                     <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">产品类型</th>
-                    <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">采购订单</th>
                     <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r"><span className="text-red-500 mr-1">*</span>生产类型</th>
                     <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">产品名称</th>
                     <th className="py-2.5 px-3 text-[12px] font-medium text-gray-600 border-b border-gray-200 border-r">产品编号</th>
@@ -230,7 +253,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                 </thead>
                 <tbody>
                   {details.length === 0 ? (
-                    <tr><td colSpan={19} className="py-8 text-center text-gray-400 text-sm">点击右上角添加明细</td></tr>
+                    <tr><td colSpan={18} className="py-8 text-center text-gray-400 text-sm">点击右上角添加明细</td></tr>
                   ) : details.map((d) => {
                      const amtExcl = (d.requirements[0].requirementAmount || 0) * (d.productInfo.unitPriceExclTax || 0);
                      const taxAmt = (d.requirements[0].requirementAmount || 0) * (d.productInfo.unitPriceInclTax || 0) - amtExcl;
@@ -242,7 +265,6 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                             </button>
                           </td>
                           <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-600 bg-gray-50">{d.productInfo.productType}</td>
-                          <td className="py-2 px-3 border-r border-gray-200 text-[13px] text-gray-500 italic bg-gray-50">保存后自动带出</td>
                           <td className="py-2 px-2 border-r border-gray-200">
                              <select 
                                 value={d.productionType}

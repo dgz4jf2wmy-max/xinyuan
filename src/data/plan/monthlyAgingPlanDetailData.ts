@@ -43,30 +43,30 @@ export const mockMonthlyAgingVersionHistory: VersionHistoryInfo[] = [
 export const mockMonthlyAgingApprovalProcess: ApprovalProcessInfo[] = [
   {
     id: '1',
-    nodeName: '计划管理员',
+    nodeName: '草稿中(计划管理员)',
     approver: '张建国',
     nodeStartTime: '2026-04-18 09:30:00',
-    approvalTime: '2026-04-18 09:30:00',
-    approvalResult: '发起申请',
-    comments: '发起月度醇化计划审批流程'
+    approvalTime: '2026-04-18 10:00:00',
+    approvalResult: '保存草稿',
+    comments: '创建初始草稿'
   },
   {
     id: '2',
-    nodeName: '生产计划部审核',
-    approver: '李建华',
+    nodeName: '已发布(计划管理员)',
+    approver: '张建国',
     nodeStartTime: '2026-04-18 10:00:00',
     approvalTime: '2026-04-19 10:20:00',
-    approvalResult: '同意',
-    comments: '数据准确，同意提交'
+    approvalResult: '申请发布',
+    comments: '数据审核无误，正式发布'
   },
   {
     id: '3',
-    nodeName: '分管领导审批',
-    approver: '王大勇',
+    nodeName: '结束',
+    approver: '-',
     nodeStartTime: '2026-04-19 10:20:00',
-    approvalTime: '2026-04-20 14:15:20',
-    approvalResult: '同意',
-    comments: '同意发布'
+    approvalTime: '2026-04-19 10:20:00',
+    approvalResult: '流程结束',
+    comments: '月度醇化计划审批归档'
   }
 ];
 

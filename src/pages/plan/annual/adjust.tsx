@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
-import { Save, Send, ArrowLeft, Plus, RefreshCw, GitPullRequest } from 'lucide-react';
+import { Save, Send, ArrowLeft, Plus, RefreshCw, GitPullRequest, X } from 'lucide-react';
 import { AnnualPlanDetail, ProductType, RegionType, AnnualPlanStatistics, ProductInfo } from '../../../types/plan';
 import { mockCurrentVersionDetails, getVersionDetails } from '../../../data/plan/annualPlanDetailData';
 import { ProductSelector } from '../components/ProductSelector';
@@ -342,7 +342,7 @@ export default function AnnualPlanAdjust() {
                 <TableHead className="w-16 text-center text-[#303133] font-bold">序号</TableHead>
                 <TableHead className="w-24 text-center text-[#303133] font-bold">产品类型</TableHead>
                 <TableHead className="w-32 text-center text-[#303133] font-bold">客户名称</TableHead>
-                <TableHead className="w-32 text-center text-[#303133] font-bold">产品型号</TableHead>
+                <TableHead className="w-32 text-center text-[#303133] font-bold">牌号</TableHead>
                 <TableHead className="w-28 text-center text-[#409eff] font-bold">预计销售量</TableHead>
                 <TableHead className="w-24 text-center text-[#303133] font-bold">期初库存</TableHead>
                 <TableHead className="w-24 text-center text-[#303133] font-bold">备产数量</TableHead>
@@ -366,14 +366,27 @@ export default function AnnualPlanAdjust() {
                       )}
                       <TableCell>
                         <div className="flex items-center justify-between group">
-                          <span>{row.data.productCode}</span>
-                          <button 
-                            className="text-[#409eff] opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-blue-50 rounded"
-                            onClick={() => { setProductModalMode('single'); setEditingIndex(row.originalIndex); setIsProductModalOpen(true); }}
-                            title="更换产品"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                          </button>
+                          <span>{row.data.brandGrade || '-'}</span>
+                          <div className="flex items-center">
+                            <button 
+                              className="text-[#409eff] opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-blue-50 rounded"
+                              onClick={() => { setProductModalMode('single'); setEditingIndex(row.originalIndex); setIsProductModalOpen(true); }}
+                              title="更换产品"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              className="text-[#f56c6c] opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded"
+                              onClick={() => {
+                                const newDetails = [...details];
+                                newDetails.splice(row.originalIndex, 1);
+                                setDetails(newDetails);
+                              }}
+                              title="删除产品"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="p-1 align-middle text-center">

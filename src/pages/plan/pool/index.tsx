@@ -33,7 +33,6 @@ export default function ProductionPoolList() {
   const [isApplicationDropdownOpen, setIsApplicationDropdownOpen] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [ignoredEmergencyIds, setIgnoredEmergencyIds] = useState<string[]>([]);
 
   // Apply filters and sorting
   const getProcessedData = () => {
@@ -64,13 +63,8 @@ export default function ProductionPoolList() {
       result = result.filter(item => item.deliveryDate === deliveryDateFilter);
     }
 
-    // Sorting & Emergency Top Priority
+    // Sorting
     result.sort((a: any, b: any) => {
-      const aIsTop = a.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(a.id));
-      const bIsTop = b.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(b.id));
-      if (aIsTop && !bIsTop) return -1;
-      if (!aIsTop && bIsTop) return 1;
-
       if (sortConfig) {
         let aValue = a[sortConfig.key] || '';
         let bValue = b[sortConfig.key] || '';
@@ -268,7 +262,6 @@ export default function ProductionPoolList() {
             <TableRow>
               <TableHead className="w-[60px] text-center">序号</TableHead>
               <TableHead>单据编号</TableHead>
-              <TableHead>变更表示</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>申请类型</TableHead>
               <TableHead>{renderSortHeader('产品类型', 'productType')}</TableHead>
@@ -278,12 +271,9 @@ export default function ProductionPoolList() {
               <TableHead>{renderSortHeader('客户名称', 'customerName')}</TableHead>
               <TableHead>{renderSortHeader('牌号', 'brandGrade')}</TableHead>
               <TableHead>规格</TableHead>
+              <TableHead>单位</TableHead>
               <TableHead className="text-right">需求量</TableHead>
               <TableHead className="text-right">初始需求量</TableHead>
-              <TableHead>单位</TableHead>
-              <TableHead className="text-right">无税单价</TableHead>
-              <TableHead className="text-right">含税单价</TableHead>
-              <TableHead className="text-right">无税金额</TableHead>
               <TableHead>{renderSortHeader('期望完成时间', 'expectedCompletionDate')}</TableHead>
               <TableHead>{renderSortHeader('到货时间', 'deliveryDate')}</TableHead>
               <TableHead>到货地点</TableHead>
@@ -319,7 +309,6 @@ export default function ProductionPoolList() {
                       <TableRow key={row.id}>
                         <TableCell className="text-center">{row.sequenceNumber}</TableCell>
                         <TableCell>{row.documentNo}</TableCell>
-                        <TableCell>{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                         <TableCell>
                           <span className={clsx(
                             row.status === PoolApplicationStatus.PendingPlan ? "text-[#409eff]" : "text-[#909399]"
@@ -335,18 +324,6 @@ export default function ProductionPoolList() {
                             )}>
                               {row.applicationType || '普通'}
                             </span>
-                            {row.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(row.id)) && (
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setIgnoredEmergencyIds(prev => [...prev, String(row.id)]);
-                                }}
-                                className="text-[10px] text-gray-400 hover:text-gray-600 underline ml-1 whitespace-nowrap"
-                                title="取消置顶"
-                              >
-                                忽略
-                              </button>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell>{row.productType}</TableCell>
@@ -356,6 +333,7 @@ export default function ProductionPoolList() {
                         <TableCell>{row.customerName}</TableCell>
                         <TableCell>{row.brandGrade}</TableCell>
                         <TableCell>{row.specification}</TableCell>
+                        <TableCell>{row.unit}</TableCell>
                         <TableCell className="text-right">
                           <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
                             {row.totalRequirementAmount?.toFixed(2)}
@@ -387,10 +365,6 @@ export default function ProductionPoolList() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
-                        <TableCell>{row.unit}</TableCell>
-                        <TableCell className="text-right">{row.unitPriceExclTax?.toFixed(2) || '--'}</TableCell>
-                        <TableCell className="text-right">{row.unitPriceInclTax?.toFixed(2) || '--'}</TableCell>
-                        <TableCell className="text-right">{row.amountExclTax?.toFixed(2) || '--'}</TableCell>
                         <TableCell>{row.expectedCompletionDate || '--'}</TableCell>
                         <TableCell>{row.deliveryDate || '--'}</TableCell>
                         <TableCell>{row.deliveryLocation || '--'}</TableCell>
@@ -408,7 +382,6 @@ export default function ProductionPoolList() {
                 <TableRow key={row.id}>
                   <TableCell className="text-center">{row.sequenceNumber}</TableCell>
                   <TableCell>{row.documentNo}</TableCell>
-                  <TableCell>{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                   <TableCell>
                     <span className={clsx(
                       row.status === PoolApplicationStatus.PendingPlan ? "text-[#409eff]" : "text-[#909399]"
@@ -424,18 +397,6 @@ export default function ProductionPoolList() {
                       )}>
                         {row.applicationType || '普通'}
                       </span>
-                      {row.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(row.id)) && (
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIgnoredEmergencyIds(prev => [...prev, String(row.id)]);
-                          }}
-                          className="text-[10px] text-gray-400 hover:text-gray-600 underline ml-1 whitespace-nowrap"
-                          title="取消置顶"
-                        >
-                          忽略
-                        </button>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell>{row.productType}</TableCell>
@@ -445,6 +406,7 @@ export default function ProductionPoolList() {
                   <TableCell>{row.customerName}</TableCell>
                   <TableCell>{row.brandGrade}</TableCell>
                   <TableCell>{row.specification}</TableCell>
+                  <TableCell>{row.unit}</TableCell>
                   <TableCell className="text-right">
                     <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
                       {row.totalRequirementAmount?.toFixed(2)}
@@ -476,10 +438,6 @@ export default function ProductionPoolList() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
-                  <TableCell>{row.unit}</TableCell>
-                  <TableCell className="text-right">{row.unitPriceExclTax?.toFixed(2) || '--'}</TableCell>
-                  <TableCell className="text-right">{row.unitPriceInclTax?.toFixed(2) || '--'}</TableCell>
-                  <TableCell className="text-right">{row.amountExclTax?.toFixed(2) || '--'}</TableCell>
                   <TableCell>{row.expectedCompletionDate || '--'}</TableCell>
                   <TableCell>{row.deliveryDate || '--'}</TableCell>
                   <TableCell>{row.deliveryLocation || '--'}</TableCell>

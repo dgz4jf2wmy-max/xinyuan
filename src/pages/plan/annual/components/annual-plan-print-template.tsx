@@ -47,7 +47,7 @@ export function AnnualPlanPrintTemplate({
              <th className="border border-black p-2 w-[40px] font-bold">序号</th>
              <th className="border border-black p-2 w-[80px] font-bold">产品类型</th>
              <th className="border border-black p-2 font-bold">客户名称</th>
-             <th className="border border-black p-2 font-bold">产品型号</th>
+             <th className="border border-black p-2 font-bold">牌号</th>
              <th className="border border-black p-2 w-[70px] font-bold leading-tight">预计销售量<br/>(箱)</th>
              {!isInitialVersion && <th className="border border-black p-2 w-[70px] font-bold leading-tight">期初库存<br/>(箱)</th>}
              {!isInitialVersion && <th className="border border-black p-2 w-[70px] font-bold leading-tight">备产数量<br/>(箱)</th>}
@@ -69,7 +69,7 @@ export function AnnualPlanPrintTemplate({
                    {row.rowSpanCustomer !== undefined && row.rowSpanCustomer > 0 && (
                      <td rowSpan={row.rowSpanCustomer} className="border border-black p-2">{row.data.customerName}</td>
                    )}
-                   <td className="border border-black p-2">{row.data.productCode}</td>
+                   <td className="border border-black p-2">{row.data.brandGrade || '-'}</td>
                    <td className="border border-black p-2 font-medium">{row.data.estimatedSalesVolume?.toFixed(2)}</td>
                    
                    {!isInitialVersion && (
