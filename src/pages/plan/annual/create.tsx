@@ -5,9 +5,8 @@ import { Input } from '../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import { Save, Send, ArrowLeft, Plus, X, RefreshCw } from 'lucide-react';
 import { AnnualPlanDetail, ProductType, RegionType, AnnualPlanStatistics, ProductInfo } from '../../../types/plan';
-import { mockInitialDetails, mockRawMaterialInventory } from '../../../data/plan/annualPlanData';
+import { mockInitialDetails } from '../../../data/plan/annualPlanData';
 import { ProductSelector } from '../components/ProductSelector';
-import { RawMaterialComparisonModal } from '../components/RawMaterialComparisonModal';
 import clsx from 'clsx';
 
 type RenderRow =
@@ -25,9 +24,6 @@ export default function AnnualPlanCreate() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [productModalMode, setProductModalMode] = useState<'single' | 'multiple'>('multiple');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
-  // 原料测算弹窗状态
-  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
 
   // 初始化加载模板数据
   useEffect(() => {
@@ -295,9 +291,6 @@ export default function AnnualPlanCreate() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-sm text-[#303133]">产销计划明细</h3>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={() => setIsMaterialModalOpen(true)}>
-              测算原料需求
-            </Button>
             <Button variant="primary" size="sm" onClick={() => { setProductModalMode('multiple'); setEditingIndex(null); setIsProductModalOpen(true); }}>
               <Plus className="w-3.5 h-3.5 mr-1" /> 添加产品
             </Button>
@@ -410,13 +403,6 @@ export default function AnnualPlanCreate() {
         onClose={() => { setIsProductModalOpen(false); setEditingIndex(null); }}
         multiple={productModalMode === 'multiple'}
         onConfirm={handleConfirmProducts}
-      />
-
-      {/* 原料测算弹窗 */}
-      <RawMaterialComparisonModal
-        isOpen={isMaterialModalOpen}
-        onClose={() => setIsMaterialModalOpen(false)}
-        data={mockRawMaterialInventory}
       />
 
       {/* 底部按钮区 (固定在侧边下方独立) */}

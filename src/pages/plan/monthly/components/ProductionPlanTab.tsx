@@ -5,7 +5,7 @@ import { Input } from '../../../../components/ui/input';
 import { Select } from '../../../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
 import { Pagination } from '../../../../components/ui/pagination';
-import { Search, RotateCcw, Plus, Edit } from 'lucide-react';
+import { Search, RotateCcw, Plus, Edit, ChevronDown } from 'lucide-react';
 import { MonthlyProductionPlanBase } from '../../../../types/monthly-plan';
 import { getMonthlyPlanPage } from '../../../../data/plan/monthlyPlanData';
 
@@ -14,6 +14,7 @@ export default function ProductionPlanTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<MonthlyProductionPlanBase[]>([]);
   const [total, setTotal] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [queryParams, setQueryParams] = useState({
     planName: '',
@@ -96,9 +97,40 @@ export default function ProductionPlanTab() {
       </div>
 
       <div className="flex justify-end gap-2 mb-4 shrink-0">
-        <Button variant="primary" onClick={() => navigate('/plan/monthly/create')}>
-          <Plus className="w-3.5 h-3.5 mr-1" /> 新增产销计划
-        </Button>
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsDropdownOpen(true)}
+          onMouseLeave={() => setIsDropdownOpen(false)}
+        >
+          <Button variant="primary" className="pr-2 cursor-pointer shrink-0" onClick={() => navigate('/plan/monthly/create')}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> 新增产销计划 <ChevronDown className="w-3.5 h-3.5 ml-1" />
+          </Button>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full pt-1 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="bg-white border border-[#ebeef5] rounded shadow-lg py-1 w-40 flex flex-col items-stretch">
+                <div 
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    navigate('/plan/monthly/create');
+                  }}
+                >
+                  月度产销计划
+                </div>
+                <div 
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    navigate('/plan/monthly/aging/create');
+                  }}
+                >
+                  月度醇化计划
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto flex flex-col border border-[#ebeef5] rounded-sm bg-white">
@@ -137,6 +169,19 @@ export default function ProductionPlanTab() {
                           >
                             {row.status === '草稿中' ? '编辑' : '查看'}
                           </Button>
+                          
+                          {row.status === '已发布' && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-[#e6a23c] h-6 px-2"
+                              onClick={() => {
+                                navigate('/plan/monthly/create', { state: { sourceId: row.id } });
+                              }}
+                            >
+                              调整
+                            </Button>
+                          )}
                           
                           {(row.status === '草稿中' || row.status === '待试验信息完善') && (
                             <Button variant="ghost" size="sm" className="text-[#f56c6c] hover:bg-red-50 h-6 px-2">

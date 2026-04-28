@@ -1,4 +1,4 @@
-import { AnnualPlan, AnnualPlanLedger, AnnualPlanDetail, PlanStatus, ProductType, RegionType, RawMaterialInventoryComparison } from '../../types/plan';
+import { AnnualPlan, AnnualPlanLedger, AnnualPlanDetail, PlanStatus, ProductType, RegionType } from '../../types/plan';
 import { mockProductList } from './productData';
 
 // 模拟初始化的计划详情数据（通常由后端根据基础数据生成模板带出）
@@ -172,55 +172,3 @@ export const getAnnualPlanPage = (params: any) => {
     }, 300);
   });
 };
-
-// 模拟原料库存对比数据
-export const mockRawMaterialInventory: RawMaterialInventoryComparison[] = [
-  {
-    id: '1',
-    sequenceNumber: 1,
-    materialName: '2024;烤烟;云南;烟梗;短梗-35',
-    totalInputQuantity: 150000.00,
-    currentInventory: 120000.00,
-    difference: -30000.00,
-  },
-  {
-    id: '2',
-    sequenceNumber: 2,
-    materialName: '2023;烤烟;云南;碎片;DCAKAHK(大碎片)-130',
-    totalInputQuantity: 85000.00,
-    currentInventory: 100000.00,
-    difference: 15000.00,
-  },
-  {
-    id: '3',
-    sequenceNumber: 3,
-    materialName: '2024 年贵州遵义烤烟碎末-150',
-    totalInputQuantity: 200000.00,
-    currentInventory: 50000.00,
-    difference: -150000.00,
-  },
-  {
-    id: '4',
-    sequenceNumber: 4,
-    materialName: '2024 年 NZH6 河南采购预混烟末',
-    totalInputQuantity: 140000.00,
-    currentInventory: 145000.00,
-    difference: 5000.00,
-  },
-  {
-    id: '5',
-    sequenceNumber: 5,
-    materialName: '吉林延边卷包回收烟末 YJ-02 无 25kg/件 2024 年',
-    totalInputQuantity: 600000.00,
-    currentInventory: 200000.00,
-    difference: -400000.00,
-  },
-  {
-    id: '6',
-    sequenceNumber: 6,
-    materialName: '2024;烤烟;江苏南京;制丝烟末;南京-130',
-    totalInputQuantity: 200000.00,
-    currentInventory: 250000.00,
-    difference: 50000.00,
-  }
-];

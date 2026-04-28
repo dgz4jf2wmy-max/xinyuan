@@ -7,8 +7,6 @@ import { Save, Send, ArrowLeft, Plus, RefreshCw, GitPullRequest } from 'lucide-r
 import { AnnualPlanDetail, ProductType, RegionType, AnnualPlanStatistics, ProductInfo } from '../../../types/plan';
 import { mockCurrentVersionDetails, getVersionDetails } from '../../../data/plan/annualPlanDetailData';
 import { ProductSelector } from '../components/ProductSelector';
-import { RawMaterialComparisonModal } from '../components/RawMaterialComparisonModal';
-import { mockRawMaterialInventory } from '../../../data/plan/annualPlanData';
 import clsx from 'clsx';
 
 type RenderRow =
@@ -31,9 +29,6 @@ export default function AnnualPlanAdjust() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [productModalMode, setProductModalMode] = useState<'single' | 'multiple'>('multiple');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
-  // 原料测算弹窗状态
-  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
 
   // 初始化加载要调整的数据 (默认加载当前已发布的版本)
   useEffect(() => {
@@ -319,9 +314,6 @@ export default function AnnualPlanAdjust() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-sm text-[#303133]">产销计划明细</h3>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={() => setIsMaterialModalOpen(true)}>
-              测算原料需求
-            </Button>
             <Button variant="primary" size="sm" onClick={() => { setProductModalMode('multiple'); setEditingIndex(null); setIsProductModalOpen(true); }}>
               <Plus className="w-3.5 h-3.5 mr-1" /> 添加产品
             </Button>
@@ -513,13 +505,6 @@ export default function AnnualPlanAdjust() {
         onClose={() => { setIsProductModalOpen(false); setEditingIndex(null); }}
         multiple={productModalMode === 'multiple'}
         onConfirm={handleConfirmProducts}
-      />
-
-      {/* 原料测算弹窗 */}
-      <RawMaterialComparisonModal
-        isOpen={isMaterialModalOpen}
-        onClose={() => setIsMaterialModalOpen(false)}
-        data={mockRawMaterialInventory}
       />
 
       {/* 底部按钮区 */}

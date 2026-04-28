@@ -50,7 +50,7 @@ export const mockMonthlyProductionPlans: MonthlyProductionPlanBase[] = [
          deliveryLocation: '江苏省南京市',
          applicantName: '李建国',
          applicantDepartment: '计划部',
-         subBrandGrade: 'GS22-01',
+         subBrandGrade: 'GS2201',
          applicationLedgerId: 'pool-1'
       }
     ]

@@ -12,7 +12,7 @@ import {
 } from "../../../../../components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "../../../../../components/ui/tabs";
 import { MonthlyAgingPlan } from "../../../../../types/monthly-plan";
-import { mockMonthlyAgingPlans } from "../../../../../data/plan/monthlyAgingPlanData";
+import { mockMonthlyAgingPlans } from "../../../../../data/plan/agingPlanData";
 import {
   mockMonthlyAgingVersionHistory,
   mockMonthlyAgingApprovalProcess,

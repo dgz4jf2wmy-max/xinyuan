@@ -14,11 +14,15 @@ const createPoolRecord = (
   amount: number,
   customerName: string,
   deliveryLocation: string,
-  status: PoolApplicationStatus = PoolApplicationStatus.PendingPlan
+  status: PoolApplicationStatus = PoolApplicationStatus.PendingPlan,
+  applicationType: string = '普通'
 ): ProductionPlanPool => ({
   id: `pool-${id}`,
   sequenceNumber: id,
+  documentNo: `DD20260501${id.toString().padStart(3, '0')}`,
+  isChanged: false,
   status,
+  applicationType,
   productType,
   productionType,
   productName,
@@ -29,11 +33,13 @@ const createPoolRecord = (
   unit: '吨',
   requirements: [{ id: `req-${id}`, sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: amount, unit: '吨' }],
   totalRequirementAmount: amount,
+  initialRequirementAmount: amount,
   unitPriceExclTax: amount > 0 ? (productType === '香精香料' ? 50000 : 12000) : 0,
   unitPriceInclTax: amount > 0 ? (productType === '香精香料' ? 56500 : 13560) : 0,
   amountExclTax: amount > 0 ? amount * (productType === '香精香料' ? 50000 : 12000) : 0,
   deliveryDate: '2026-06-01',
   deliveryLocation,
+  purchaseOrder: `PO-2026-${id.toString().padStart(3, '0')}`,
   applicantName: id % 2 === 0 ? '张建国' : '李明',
   applicantDepartment: id % 2 === 0 ? '营销部' : '生产技术部',
 });
@@ -48,11 +54,15 @@ const createExperimentalPoolRecord = (
   baseAmount: number,
   customerName: string,
   deliveryLocation: string,
-  status: PoolApplicationStatus = PoolApplicationStatus.PendingPlan
+  status: PoolApplicationStatus = PoolApplicationStatus.PendingPlan,
+  applicationType: string = '紧急'
 ): ProductionPlanPool => ({
   id: `pool-${id}`,
   sequenceNumber: id,
+  documentNo: `SY20260501${id.toString().padStart(3, '0')}`,
+  isChanged: false,
   status,
+  applicationType,
   productType,
   productionType,
   productName,
@@ -67,11 +77,13 @@ const createExperimentalPoolRecord = (
     { id: `req-${id}-3`, sequenceNumber: 3, versionNo: 'V2.0', requirementAmount: baseAmount * 1.5, unit: '吨' }
   ],
   totalRequirementAmount: (baseAmount * 0.8) + (baseAmount * 1.0) + (baseAmount * 1.5),
+  initialRequirementAmount: baseAmount * 0.8,
   unitPriceExclTax: 0,
   unitPriceInclTax: 0,
   amountExclTax: 0,
   deliveryDate: '2026-06-01',
   deliveryLocation,
+  purchaseOrder: `PO-2026-${id.toString().padStart(3, '0')}`,
   applicantName: id % 2 === 0 ? '测试员A' : '研究员B',
   applicantDepartment: id % 2 === 0 ? '技术中心' : '中试基地',
 });

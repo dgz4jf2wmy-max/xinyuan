@@ -4,13 +4,16 @@ import { Button } from '../../../components/ui/button';
 import { Search, Plus, Filter, RotateCcw } from 'lucide-react';
 import { mockApplicationLedgerData } from '../../../data/plan/applicationData';
 import { PoolApplicationStatus } from '../../../types/production-pool';
-import { ApplicationFormModal } from '../pool/components/ApplicationFormModal';
+import { PurchaseOrderApplicationModal } from '../pool/components/PurchaseOrderApplicationModal';
+import { NonPurchaseOrderApplicationModal } from '../pool/components/NonPurchaseOrderApplicationModal';
 import clsx from 'clsx';
 
 export default function PlanPoolApplicationList() {
   const [data, setData] = useState(mockApplicationLedgerData);
   const [searchKey, setSearchKey] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPOModalOpen, setIsPOModalOpen] = useState(false);
+  const [isNonPOModalOpen, setIsNonPOModalOpen] = useState(false);
+  const [isApplicationDropdownOpen, setIsApplicationDropdownOpen] = useState(false);
 
   // Apply filters
   const getProcessedData = () => {
@@ -35,11 +38,10 @@ export default function PlanPoolApplicationList() {
     // Inject mock sequence number & ID
     const newRecord = {
       ...formData,
-      id: `app-new-${Date.now()}`,
-      sequenceNumber: data.length + 1,
+      id: `app-new-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       status: PoolApplicationStatus.PendingPlan,
     };
-    setData([newRecord, ...data]);
+    setData(prev => [{ ...newRecord, sequenceNumber: prev.length + 1 }, ...prev]);
   };
 
   return (
@@ -63,9 +65,34 @@ export default function PlanPoolApplicationList() {
             <Button variant="primary" onClick={handleReset}>
               <RotateCcw className="w-3.5 h-3.5 mr-1" /> 重置
             </Button>
-            <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-              <Plus className="w-3.5 h-3.5 mr-1" /> 发起申请
-            </Button>
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsApplicationDropdownOpen(true)}
+              onMouseLeave={() => setIsApplicationDropdownOpen(false)}
+            >
+              <Button variant="primary" className="pr-2 cursor-default">
+                <Plus className="w-3.5 h-3.5 mr-1" /> 发起申请 <span className="transform rotate-0 ml-1">▼</span>
+              </Button>
+              
+              {isApplicationDropdownOpen && (
+                <div className="absolute right-0 top-full pt-1 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  <div className="bg-white border border-[#ebeef5] rounded shadow-lg py-1 w-48 flex flex-col items-stretch">
+                    <div 
+                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 transition-colors"
+                      onClick={() => { setIsPOModalOpen(true); setIsApplicationDropdownOpen(false); }}
+                    >
+                      采购订单类申请
+                    </div>
+                    <div 
+                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 transition-colors"
+                      onClick={() => { setIsNonPOModalOpen(true); setIsApplicationDropdownOpen(false); }}
+                    >
+                      非采购订单类申请
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -76,7 +103,10 @@ export default function PlanPoolApplicationList() {
           <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] whitespace-nowrap text-xs">
             <TableRow>
               <TableHead className="w-[60px] text-center">序号</TableHead>
+              <TableHead>单据编号</TableHead>
+              <TableHead>变更表示</TableHead>
               <TableHead>状态</TableHead>
+              <TableHead>申请类型</TableHead>
               <TableHead>产品类型</TableHead>
               <TableHead>生产类型</TableHead>
               <TableHead>产品名称</TableHead>
@@ -84,20 +114,24 @@ export default function PlanPoolApplicationList() {
               <TableHead>客户名称</TableHead>
               <TableHead>牌号</TableHead>
               <TableHead>规格</TableHead>
-              <TableHead>单位</TableHead>
               <TableHead className="text-right">需求量</TableHead>
+              <TableHead className="text-right">初始需求量</TableHead>
+              <TableHead>单位</TableHead>
               <TableHead className="text-right">无税单价</TableHead>
               <TableHead className="text-right">含税单价</TableHead>
               <TableHead className="text-right">无税金额</TableHead>
               <TableHead>期望完成时间</TableHead>
               <TableHead>到货时间</TableHead>
               <TableHead>到货地点</TableHead>
+              <TableHead>采购订单</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="text-xs">
             {processedData.map((row, index) => (
               <TableRow key={row.id}>
                 <TableCell className="text-center">{row.sequenceNumber}</TableCell>
+                <TableCell>{row.documentNo}</TableCell>
+                <TableCell>{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                 <TableCell>
                   <span className={clsx(
                     row.status === PoolApplicationStatus.PendingPlan && "text-[#409eff]",
@@ -109,6 +143,14 @@ export default function PlanPoolApplicationList() {
                     {row.status}
                   </span>
                 </TableCell>
+                <TableCell>
+                  <span className={clsx(
+                    "px-2 py-0.5 rounded text-xs font-medium border",
+                    row.applicationType === '紧急' ? "bg-red-50 text-red-600 border-red-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                  )}>
+                    {row.applicationType || '普通'}
+                  </span>
+                </TableCell>
                 <TableCell>{row.productType}</TableCell>
                 <TableCell>{row.productionType}</TableCell>
                 <TableCell>{row.productName}</TableCell>
@@ -116,7 +158,6 @@ export default function PlanPoolApplicationList() {
                 <TableCell>{row.customerName}</TableCell>
                 <TableCell>{row.brandGrade}</TableCell>
                 <TableCell>{row.specification}</TableCell>
-                <TableCell>{row.unit}</TableCell>
                 <TableCell className="text-right">
                   <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
                     {row.totalRequirementAmount?.toFixed(2)}
@@ -147,17 +188,20 @@ export default function PlanPoolApplicationList() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-right">{row.unitPriceExclTax?.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{row.unitPriceInclTax?.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{row.amountExclTax?.toLocaleString()}</TableCell>
+                <TableCell className="text-right">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
+                <TableCell>{row.unit}</TableCell>
+                <TableCell className="text-right">{row.unitPriceExclTax?.toFixed(2) || '--'}</TableCell>
+                <TableCell className="text-right">{row.unitPriceInclTax?.toFixed(2) || '--'}</TableCell>
+                <TableCell className="text-right">{row.amountExclTax?.toFixed(2) || '--'}</TableCell>
                 <TableCell>{row.expectedCompletionDate || '--'}</TableCell>
                 <TableCell>{row.deliveryDate || '--'}</TableCell>
                 <TableCell>{row.deliveryLocation || '--'}</TableCell>
+                <TableCell>{row.purchaseOrder || '--'}</TableCell>
               </TableRow>
             ))}
             {processedData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={15} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={22} className="text-center py-8 text-gray-500">
                   暂无数据
                 </TableCell>
               </TableRow>
@@ -166,9 +210,14 @@ export default function PlanPoolApplicationList() {
         </Table>
       </div>
 
-      <ApplicationFormModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <PurchaseOrderApplicationModal 
+        isOpen={isPOModalOpen} 
+        onClose={() => setIsPOModalOpen(false)} 
+        onSubmit={handleApplicationSubmit}
+      />
+      <NonPurchaseOrderApplicationModal 
+        isOpen={isNonPOModalOpen} 
+        onClose={() => setIsNonPOModalOpen(false)} 
         onSubmit={handleApplicationSubmit}
       />
     </div>

@@ -17,38 +17,31 @@ export default function CustomerLedger() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-md shadow-sm border border-gray-200">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <div>
-          <h2 className="text-lg font-medium text-gray-800">客户台账</h2>
-          <p className="text-sm text-gray-500 mt-1">管理维护系统中的客户基本信息</p>
-        </div>
-      </div>
-
-      <div className="p-4 border-b border-gray-100 bg-gray-50 flex flex-wrap gap-4 items-end">
-        <div className="w-[300px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">关键字</label>
+    <div className="flex flex-col h-full space-y-4">
+      {/* 搜索区域 */}
+      <div className="flex flex-wrap gap-4 items-center bg-white p-4">
+        <div className="w-64">
           <Input 
-            placeholder="请输入客户名称或编码..." 
+            placeholder="搜索客户名称或编码" 
             value={searchKey}
             onChange={(e) => setSearchKey(e.target.value)}
-            className="bg-white"
           />
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="bg-[#1890ff] text-white hover:bg-[#40a9ff] hover:text-white border-0" onClick={() => {}}>
-            <Search className="w-4 h-4 mr-2" />
+        <div className="flex gap-2 ml-auto">
+          <Button variant="primary" onClick={() => {}}>
+            <Search className="w-3.5 h-3.5 mr-1" />
             查询
           </Button>
-          <Button variant="outline" onClick={() => setSearchKey('')}>
-            <RotateCcw className="w-4 h-4 mr-2" />
+          <Button variant="primary" onClick={() => setSearchKey('')}>
+            <RotateCcw className="w-3.5 h-3.5 mr-1" />
             重置
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 flex flex-col">
-        <div className="border border-[#ebeef5] rounded-sm overflow-hidden flex-1">
+      {/* 表格区域 */}
+      <div className="flex-1 bg-white p-4 flex flex-col overflow-hidden">
+        <div className="border border-[#ebeef5] rounded-sm overflow-auto flex-1">
           <Table className="relative w-full">
             <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] whitespace-nowrap">
               <TableRow>

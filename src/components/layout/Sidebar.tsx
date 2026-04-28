@@ -36,7 +36,8 @@ export const menuItems = [
     label: '基础项',
     icon: LayoutGrid,
     children: [
-      { path: '/customer/ledger', label: '客户台账', icon: FileEdit }
+      { path: '/customer/ledger', label: '客户台账', icon: FileEdit },
+      { path: '/base/sub-brand', label: '分牌号台账', icon: FileEdit }
     ]
   }
 ];

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
 import { Select } from '../../../../components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
 import { getPoolPage } from '../../../../data/plan/productionPoolData';
+import { mockMonthlyProductionPlans } from '../../../../data/plan/monthlyPlanData';
 import { ProductionPlanPool } from '../../../../types/production-pool';
 import { ProductType } from '../../../../types/plan';
 import { AlertTriangle, GripVertical, ArrowRight, ChevronDown, ChevronUp, ChevronRight, ArrowUpDown } from 'lucide-react';
@@ -15,6 +16,9 @@ import { cn } from '../../../../lib/utils';
 
 export default function MonthlyProductionPlanCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const sourceId = location.state?.sourceId;
+
   const [planName, setPlanName] = useState('');
   const [activeCategory, setActiveCategory] = useState<'raw_material' | 'flavor'>('raw_material');
   
@@ -56,6 +60,69 @@ export default function MonthlyProductionPlanCreate() {
       return 0;
     });
   }
+
+  useEffect(() => {
+    // Load pending plans
+    getPoolPage({ status: '待计划', pageNum: 1, pageSize: 100 }).then(res => {
+      setPendingPool(res.list.filter(p => p.status === '待计划'));
+    });
+
+    if (sourceId) {
+      const sourcePlan = mockMonthlyProductionPlans.find(p => p.id === sourceId);
+      if (sourcePlan) {
+        setPlanName(sourcePlan.planName + ' (调整)');
+        
+        if (sourcePlan.planList && sourcePlan.planList.length > 0) {
+          setDraftTables(sourcePlan.planList);
+          setDraftDetails(sourcePlan.details);
+        } else {
+          // Add fallback data for the demo if it's empty
+          setDraftTables([
+            {
+              id: `tb-${Date.now()}-1`,
+              sequenceNumber: 1,
+              productType: '再造梗丝',
+              brandGrade: 'GS22',
+              productionVolume: 35,
+              remarks: '复用原版本计划'
+            },
+            {
+              id: `tb-${Date.now()}-2`,
+              sequenceNumber: 2,
+              productType: '再造烟叶',
+              brandGrade: 'HBZY-10',
+              productionVolume: 120,
+              remarks: '需协调外部原料'
+            }
+          ]);
+          setDraftDetails([
+            {
+               id: `dt-${Date.now()}-1`,
+               productType: '再造梗丝',
+               productionType: '再造梗丝配方生产（成品）',
+               productName: '再造梗丝（省内）',
+               productCode: '010210001',
+               customerName: '江苏中烟工业有限责任公司',
+               brandGrade: 'GS22',
+               specification: '15',
+               requirementAmount: 35,
+               unit: '吨',
+               unitPriceExclTax: 12000,
+               unitPriceInclTax: 13560,
+               amountExclTax: 420000,
+               expectedCompletionDate: '2026-04-15',
+               deliveryDate: '2026-04-20',
+               deliveryLocation: '江苏省南京市',
+               applicantName: '李建国',
+               applicantDepartment: '计划部',
+               subBrandGrade: 'GS22-01',
+               applicationLedgerId: 'pool-1'
+            }
+          ]);
+        }
+      }
+    }
+  }, [sourceId]);
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -105,13 +172,6 @@ export default function MonthlyProductionPlanCreate() {
     }
     setExpandedTableIds(newExpanded);
   };
-
-  useEffect(() => {
-    // Load pending plans - strictly "待计划" status
-    getPoolPage({ status: '待计划', pageNum: 1, pageSize: 100 }).then(res => {
-      setPendingPool(res.list.filter(p => p.status === '待计划'));
-    });
-  }, []);
 
   const handleSelectPoolItem = (id: string) => {
     const newKeys = new Set(selectedPoolIds);
@@ -196,8 +256,8 @@ export default function MonthlyProductionPlanCreate() {
               expectedCompletionDate: item.expectedCompletionDate,
               deliveryDate: item.deliveryDate,
               deliveryLocation: item.deliveryLocation,
-              applicantName: item.applicantName || '系统分配',
-              applicantDepartment: item.applicantDepartment || '生产部',
+              applicantName: item.applicantName?.toString() || '系统分配',
+              applicantDepartment: item.applicantDepartment?.toString() || '生产部',
               subBrandGrade: `${item.brandGrade}-${subSuffix}`,
               applicationLedgerId: item.id
            });
@@ -379,19 +439,24 @@ export default function MonthlyProductionPlanCreate() {
                     </TableHead>
                     <TableHead className="w-8 px-0"></TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">序号</TableHead>
+                    <TableHead className="text-[12px] whitespace-nowrap">单据编号</TableHead>
+                    <TableHead className="text-[12px] whitespace-nowrap">变更表示</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">状态</TableHead>
+                    <TableHead className="text-[12px] whitespace-nowrap">申请类型</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">产品类型</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">生产类型</TableHead>
-                    <TableHead className="text-[12px] whitespace-nowrap">牌号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">产品名称</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">产品编号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">客户名称</TableHead>
+                    <TableHead className="text-[12px] whitespace-nowrap">牌号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">规格</TableHead>
-                    <TableHead className="text-[12px] text-right whitespace-nowrap">需求量</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">单位</TableHead>
+                    <TableHead className="text-[12px] text-right whitespace-nowrap">需求量</TableHead>
+                    <TableHead className="text-[12px] text-right whitespace-nowrap">初始需求量</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('期望完成时间', 'expectedCompletionDate')}</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('到货时间', 'deliveryDate')}</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">到货地点</TableHead>
+                    <TableHead className="text-[12px] whitespace-nowrap">采购订单</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">申请人</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">申请人部门</TableHead>
                   </TableRow>
@@ -410,7 +475,7 @@ export default function MonthlyProductionPlanCreate() {
                         <React.Fragment key={groupName}>
                           {/* 分组表头行 */}
                           <TableRow className="bg-[#f0f2f5] hover:bg-[#f0f2f5]">
-                            <TableCell colSpan={18} className="py-2.5 text-[12px] font-semibold text-[#303133] border-t border-[#ebeef5]">
+                            <TableCell colSpan={23} className="py-2.5 text-[12px] font-semibold text-[#303133] border-t border-[#ebeef5]">
                               <span className="text-[#409eff] mr-2">◗</span>
                               {groupName} 
                               <span className="ml-2 text-[10px] font-normal text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
@@ -445,23 +510,31 @@ export default function MonthlyProductionPlanCreate() {
                                   <GripVertical className="w-3.5 h-3.5 text-gray-300" />
                                 </TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.sequenceNumber}</TableCell>
+                                <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.documentNo}</TableCell>
+                                <TableCell className="text-[12px] px-2 !py-2 whitespace-nowrap">{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                                 <TableCell className="px-2 !py-2 whitespace-nowrap text-[12px] text-[#409eff]">{row.status}</TableCell>
+                                <TableCell className="px-2 !py-2 whitespace-nowrap">
+                                  <span className={cn(
+                                    "px-2 py-0.5 rounded text-[10px] font-medium border",
+                                    row.applicationType === '紧急' ? "bg-red-50 text-red-600 border-red-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                                  )}>
+                                    {row.applicationType || '普通'}
+                                  </span>
+                                </TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productType}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.productionType}>{row.productionType}</TableCell>
-                                <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productName}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productCode}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.customerName}>{row.customerName}</TableCell>
+                                <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.specification}</TableCell>
-                                <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">
-                                  {row.totalRequirementAmount}
-                                </TableCell>
-                                <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">
-                                  {row.unit}
-                                </TableCell>
+                                <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.unit}</TableCell>
+                                <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.totalRequirementAmount}</TableCell>
+                                <TableCell className="text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.expectedCompletionDate || '--'}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.deliveryDate || '--'}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.deliveryLocation || '--'}</TableCell>
+                                <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.purchaseOrder || '--'}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.applicantName || '--'}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.applicantDepartment || '--'}</TableCell>
                               </TableRow>
@@ -497,23 +570,33 @@ export default function MonthlyProductionPlanCreate() {
                             <GripVertical className="w-3.5 h-3.5 text-gray-300" />
                           </TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.sequenceNumber}</TableCell>
+                          <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.documentNo}</TableCell>
+                          <TableCell className="text-[12px] px-2 !py-2 whitespace-nowrap">{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                           <TableCell className="px-2 !py-2 whitespace-nowrap text-[12px] text-[#409eff]">{row.status}</TableCell>
+                          <TableCell className="px-2 !py-2 whitespace-nowrap">
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-[10px] font-medium border",
+                              row.applicationType === '紧急' ? "bg-red-50 text-red-600 border-red-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                            )}>
+                              {row.applicationType || '普通'}
+                            </span>
+                          </TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productType}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.productionType}>{row.productionType}</TableCell>
-                          <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productName}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productCode}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.customerName}>{row.customerName}</TableCell>
+                          <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.specification}</TableCell>
+                          <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.unit}</TableCell>
                           <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">
                             {row.totalRequirementAmount}
                           </TableCell>
-                          <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">
-                            {row.unit}
-                          </TableCell>
+                          <TableCell className="text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.expectedCompletionDate || '--'}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.deliveryDate || '--'}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.deliveryLocation || '--'}</TableCell>
+                          <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.purchaseOrder || '--'}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.applicantName || '--'}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.applicantDepartment || '--'}</TableCell>
                         </TableRow>
@@ -522,7 +605,7 @@ export default function MonthlyProductionPlanCreate() {
                   )}
                   {currentPendingPool.length === 0 && (
                     <TableRow>
-                       <TableCell colSpan={18} className="text-center py-16 text-gray-400 border-none">暂无对应类型的待处理需求</TableCell>
+                       <TableCell colSpan={23} className="text-center py-16 text-gray-400 border-none">暂无对应类型的待处理需求</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

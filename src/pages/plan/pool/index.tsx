@@ -7,7 +7,8 @@ import { Select } from '../../../components/ui/select';
 import { Search, Plus, RotateCcw, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { mockProductionPoolData } from '../../../data/plan/productionPoolData';
 import { PoolApplicationStatus } from '../../../types/production-pool';
-import { ApplicationFormModal } from './components/ApplicationFormModal';
+import { PurchaseOrderApplicationModal } from './components/PurchaseOrderApplicationModal';
+import { NonPurchaseOrderApplicationModal } from './components/NonPurchaseOrderApplicationModal';
 import clsx from 'clsx';
 
 export default function ProductionPoolList() {
@@ -27,9 +28,12 @@ export default function ProductionPoolList() {
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [groupByFilter, setGroupByFilter] = useState('');
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPOModalOpen, setIsPOModalOpen] = useState(false);
+  const [isNonPOModalOpen, setIsNonPOModalOpen] = useState(false);
+  const [isApplicationDropdownOpen, setIsApplicationDropdownOpen] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [ignoredEmergencyIds, setIgnoredEmergencyIds] = useState<string[]>([]);
 
   // Apply filters and sorting
   const getProcessedData = () => {
@@ -60,17 +64,22 @@ export default function ProductionPoolList() {
       result = result.filter(item => item.deliveryDate === deliveryDateFilter);
     }
 
-    // Sorting
-    if (sortConfig) {
-      result.sort((a: any, b: any) => {
+    // Sorting & Emergency Top Priority
+    result.sort((a: any, b: any) => {
+      const aIsTop = a.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(a.id));
+      const bIsTop = b.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(b.id));
+      if (aIsTop && !bIsTop) return -1;
+      if (!aIsTop && bIsTop) return 1;
+
+      if (sortConfig) {
         let aValue = a[sortConfig.key] || '';
         let bValue = b[sortConfig.key] || '';
         
         if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+      }
+      return 0;
+    });
 
     return result;
   };
@@ -124,11 +133,10 @@ export default function ProductionPoolList() {
     // Inject mock sequence number & ID
     const newRecord = {
       ...formData,
-      id: `pool-new-${Date.now()}`,
-      sequenceNumber: data.length + 1,
+      id: `pool-new-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       status: PoolApplicationStatus.PendingPlan,
     };
-    setData([newRecord, ...data]);
+    setData(prev => [{ ...newRecord, sequenceNumber: prev.length + 1 }, ...prev]);
   };
 
   return (
@@ -223,9 +231,34 @@ export default function ProductionPoolList() {
             </div>
           )}
         </div>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-          <Plus className="w-3.5 h-3.5 mr-1" /> 发起申请
-        </Button>
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsApplicationDropdownOpen(true)}
+          onMouseLeave={() => setIsApplicationDropdownOpen(false)}
+        >
+          <Button variant="primary" className="pr-2 cursor-default">
+            <Plus className="w-3.5 h-3.5 mr-1" /> 发起申请 <ChevronDown className="w-3.5 h-3.5 ml-1" />
+          </Button>
+          
+          {isApplicationDropdownOpen && (
+            <div className="absolute right-0 top-full pt-1 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="bg-white border border-[#ebeef5] rounded shadow-lg py-1 w-48 flex flex-col items-stretch">
+                <div 
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 transition-colors"
+                  onClick={() => { setIsPOModalOpen(true); setIsApplicationDropdownOpen(false); }}
+                >
+                  采购订单类申请
+                </div>
+                <div 
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 transition-colors"
+                  onClick={() => { setIsNonPOModalOpen(true); setIsApplicationDropdownOpen(false); }}
+                >
+                  非采购订单类申请
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 视图内容区 */}
@@ -234,13 +267,19 @@ export default function ProductionPoolList() {
           <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] whitespace-nowrap">
             <TableRow>
               <TableHead className="w-[60px] text-center">序号</TableHead>
+              <TableHead>单据编号</TableHead>
+              <TableHead>变更表示</TableHead>
               <TableHead>状态</TableHead>
+              <TableHead>申请类型</TableHead>
               <TableHead>{renderSortHeader('产品类型', 'productType')}</TableHead>
               <TableHead>生产类型</TableHead>
+              <TableHead>产品名称</TableHead>
+              <TableHead>产品编号</TableHead>
               <TableHead>{renderSortHeader('客户名称', 'customerName')}</TableHead>
               <TableHead>{renderSortHeader('牌号', 'brandGrade')}</TableHead>
               <TableHead>规格</TableHead>
               <TableHead className="text-right">需求量</TableHead>
+              <TableHead className="text-right">初始需求量</TableHead>
               <TableHead>单位</TableHead>
               <TableHead className="text-right">无税单价</TableHead>
               <TableHead className="text-right">含税单价</TableHead>
@@ -248,6 +287,7 @@ export default function ProductionPoolList() {
               <TableHead>{renderSortHeader('期望完成时间', 'expectedCompletionDate')}</TableHead>
               <TableHead>{renderSortHeader('到货时间', 'deliveryDate')}</TableHead>
               <TableHead>到货地点</TableHead>
+              <TableHead>采购订单</TableHead>
               <TableHead>申请人</TableHead>
               <TableHead>申请人部门</TableHead>
             </TableRow>
@@ -266,7 +306,7 @@ export default function ProductionPoolList() {
                   <React.Fragment key={groupName}>
                     {/* 分组表头行 */}
                     <TableRow className="bg-[#f0f2f5] hover:bg-[#f0f2f5]">
-                      <TableCell colSpan={18} className="py-2.5 text-sm font-semibold text-[#303133] border-t border-[#ebeef5]">
+                      <TableCell colSpan={24} className="py-2.5 text-sm font-semibold text-[#303133] border-t border-[#ebeef5]">
                         <span className="text-[#409eff] mr-2">◗</span>
                         {groupName} 
                         <span className="ml-2 text-xs font-normal text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
@@ -278,6 +318,8 @@ export default function ProductionPoolList() {
                     {items.map((row) => (
                       <TableRow key={row.id}>
                         <TableCell className="text-center">{row.sequenceNumber}</TableCell>
+                        <TableCell>{row.documentNo}</TableCell>
+                        <TableCell>{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                         <TableCell>
                           <span className={clsx(
                             row.status === PoolApplicationStatus.PendingPlan ? "text-[#409eff]" : "text-[#909399]"
@@ -285,18 +327,34 @@ export default function ProductionPoolList() {
                             {row.status}
                           </span>
                         </TableCell>
-                        <TableCell>{row.productType}</TableCell>
-                        <TableCell>{row.productionType}</TableCell>
-                        <TableCell>{row.customerName}</TableCell>
                         <TableCell>
-                          <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
-                            {row.brandGrade}
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-max bg-gray-800 text-white text-xs rounded px-2 py-1.5 shadow-lg z-50">
-                              <div className="font-semibold">{row.productName}</div>
-                              <div className="text-gray-300 mt-0.5">{row.productCode}</div>
-                            </div>
+                          <div className="flex items-center gap-1">
+                            <span className={clsx(
+                              "px-2 py-0.5 rounded text-xs font-medium border",
+                              row.applicationType === '紧急' ? "bg-red-50 text-red-600 border-red-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                            )}>
+                              {row.applicationType || '普通'}
+                            </span>
+                            {row.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(row.id)) && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIgnoredEmergencyIds(prev => [...prev, String(row.id)]);
+                                }}
+                                className="text-[10px] text-gray-400 hover:text-gray-600 underline ml-1 whitespace-nowrap"
+                                title="取消置顶"
+                              >
+                                忽略
+                              </button>
+                            )}
                           </div>
                         </TableCell>
+                        <TableCell>{row.productType}</TableCell>
+                        <TableCell>{row.productionType}</TableCell>
+                        <TableCell>{row.productName}</TableCell>
+                        <TableCell>{row.productCode}</TableCell>
+                        <TableCell>{row.customerName}</TableCell>
+                        <TableCell>{row.brandGrade}</TableCell>
                         <TableCell>{row.specification}</TableCell>
                         <TableCell className="text-right">
                           <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
@@ -328,19 +386,15 @@ export default function ProductionPoolList() {
                             )}
                           </div>
                         </TableCell>
+                        <TableCell className="text-right">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
                         <TableCell>{row.unit}</TableCell>
-                        <TableCell className="text-right">
-                          {row.unitPriceExclTax ? row.unitPriceExclTax.toFixed(2) : '--'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.unitPriceInclTax ? row.unitPriceInclTax.toFixed(2) : '--'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.amountExclTax ? row.amountExclTax.toFixed(2) : '--'}
-                        </TableCell>
+                        <TableCell className="text-right">{row.unitPriceExclTax?.toFixed(2) || '--'}</TableCell>
+                        <TableCell className="text-right">{row.unitPriceInclTax?.toFixed(2) || '--'}</TableCell>
+                        <TableCell className="text-right">{row.amountExclTax?.toFixed(2) || '--'}</TableCell>
                         <TableCell>{row.expectedCompletionDate || '--'}</TableCell>
                         <TableCell>{row.deliveryDate || '--'}</TableCell>
                         <TableCell>{row.deliveryLocation || '--'}</TableCell>
+                        <TableCell>{row.purchaseOrder || '--'}</TableCell>
                         <TableCell>{row.applicantName || '--'}</TableCell>
                         <TableCell>{row.applicantDepartment || '--'}</TableCell>
                       </TableRow>
@@ -353,6 +407,8 @@ export default function ProductionPoolList() {
               processedData.map((row, index) => (
                 <TableRow key={row.id}>
                   <TableCell className="text-center">{row.sequenceNumber}</TableCell>
+                  <TableCell>{row.documentNo}</TableCell>
+                  <TableCell>{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                   <TableCell>
                     <span className={clsx(
                       row.status === PoolApplicationStatus.PendingPlan ? "text-[#409eff]" : "text-[#909399]"
@@ -360,18 +416,34 @@ export default function ProductionPoolList() {
                       {row.status}
                     </span>
                   </TableCell>
-                  <TableCell>{row.productType}</TableCell>
-                  <TableCell>{row.productionType}</TableCell>
-                  <TableCell>{row.customerName}</TableCell>
                   <TableCell>
-                    <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
-                      {row.brandGrade}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-max bg-gray-800 text-white text-xs rounded px-2 py-1.5 shadow-lg z-50">
-                        <div className="font-semibold">{row.productName}</div>
-                        <div className="text-gray-300 mt-0.5">{row.productCode}</div>
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <span className={clsx(
+                        "px-2 py-0.5 rounded text-xs font-medium border",
+                        row.applicationType === '紧急' ? "bg-red-50 text-red-600 border-red-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                      )}>
+                        {row.applicationType || '普通'}
+                      </span>
+                      {row.applicationType === '紧急' && !ignoredEmergencyIds.includes(String(row.id)) && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIgnoredEmergencyIds(prev => [...prev, String(row.id)]);
+                          }}
+                          className="text-[10px] text-gray-400 hover:text-gray-600 underline ml-1 whitespace-nowrap"
+                          title="取消置顶"
+                        >
+                          忽略
+                        </button>
+                      )}
                     </div>
                   </TableCell>
+                  <TableCell>{row.productType}</TableCell>
+                  <TableCell>{row.productionType}</TableCell>
+                  <TableCell>{row.productName}</TableCell>
+                  <TableCell>{row.productCode}</TableCell>
+                  <TableCell>{row.customerName}</TableCell>
+                  <TableCell>{row.brandGrade}</TableCell>
                   <TableCell>{row.specification}</TableCell>
                   <TableCell className="text-right">
                     <div className="group relative inline-block cursor-help border-b border-dashed border-gray-400">
@@ -403,19 +475,15 @@ export default function ProductionPoolList() {
                       )}
                     </div>
                   </TableCell>
+                  <TableCell className="text-right">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
                   <TableCell>{row.unit}</TableCell>
-                  <TableCell className="text-right">
-                    {row.unitPriceExclTax ? row.unitPriceExclTax.toFixed(2) : '--'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {row.unitPriceInclTax ? row.unitPriceInclTax.toFixed(2) : '--'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {row.amountExclTax ? row.amountExclTax.toFixed(2) : '--'}
-                  </TableCell>
+                  <TableCell className="text-right">{row.unitPriceExclTax?.toFixed(2) || '--'}</TableCell>
+                  <TableCell className="text-right">{row.unitPriceInclTax?.toFixed(2) || '--'}</TableCell>
+                  <TableCell className="text-right">{row.amountExclTax?.toFixed(2) || '--'}</TableCell>
                   <TableCell>{row.expectedCompletionDate || '--'}</TableCell>
                   <TableCell>{row.deliveryDate || '--'}</TableCell>
                   <TableCell>{row.deliveryLocation || '--'}</TableCell>
+                  <TableCell>{row.purchaseOrder || '--'}</TableCell>
                   <TableCell>{row.applicantName || '--'}</TableCell>
                   <TableCell>{row.applicantDepartment || '--'}</TableCell>
                 </TableRow>
@@ -425,9 +493,14 @@ export default function ProductionPoolList() {
         </Table>
       </div>
 
-      <ApplicationFormModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <PurchaseOrderApplicationModal 
+        isOpen={isPOModalOpen} 
+        onClose={() => setIsPOModalOpen(false)} 
+        onSubmit={handleApplicationSubmit}
+      />
+      <NonPurchaseOrderApplicationModal 
+        isOpen={isNonPOModalOpen} 
+        onClose={() => setIsNonPOModalOpen(false)} 
         onSubmit={handleApplicationSubmit}
       />
     </div>

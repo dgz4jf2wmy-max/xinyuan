@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
 import { Input } from '../../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../../components/ui/table';
 import { GripVertical, ArrowRight, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { MonthlyAgingPlanItem } from '../../../../../types/monthly-plan';
-import { initialAgingPlanItem } from '../../../../../data/plan/agingPlanCreateData';
 import { getPoolPage } from '../../../../../data/plan/productionPoolData';
+import { mockMonthlyAgingPlanItems } from '../../../../../data/plan/monthlyAgingPlanData';
+import { mockMonthlyAgingPlans } from '../../../../../data/plan/agingPlanData';
 import { ProductionPlanPool } from '../../../../../types/production-pool';
 import { cn } from '../../../../../lib/utils';
 
 export default function AgeingPlanCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const sourceId = location.state?.sourceId;
+
   const [planName, setPlanName] = useState('');
   
   // Left side: Pending Pool
@@ -60,7 +64,25 @@ export default function AgeingPlanCreate() {
       const agingPool = res.list.filter(p => p.productionType?.includes('醇化'));
       setPendingPool(agingPool);
     });
-  }, []);
+
+    if (sourceId) {
+      const sourcePlan = mockMonthlyAgingPlans.find(plan => plan.sequenceNumber === Number(sourceId));
+      if (sourcePlan) {
+        setPlanName(sourcePlan.planName + ' (调整)');
+        
+        const selectedItems = mockMonthlyAgingPlanItems.map((v, index) => ({
+          ...v,
+          poolItem: {
+             id: 'mock-pool-aging-' + index,
+             documentNo: 'mock-doc',
+             productType: '再造烟叶',
+             brandGrade: v.brandName,
+          } as any
+        }));
+        setItems(selectedItems);
+      }
+    }
+  }, [sourceId]);
 
   const handleSelectPoolItem = (id: string) => {
     const newKeys = new Set(selectedPoolIds);
@@ -271,19 +293,24 @@ export default function AgeingPlanCreate() {
                   </TableHead>
                   <TableHead className="w-8 px-0"></TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">序号</TableHead>
+                  <TableHead className="text-[12px] whitespace-nowrap">单据编号</TableHead>
+                  <TableHead className="text-[12px] whitespace-nowrap">变更表示</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('状态', 'status')}</TableHead>
+                  <TableHead className="text-[12px] whitespace-nowrap">申请类型</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">产品类型</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">生产类型</TableHead>
-                  <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('牌号', 'brandGrade')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">产品名称</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">产品编号</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">客户名称</TableHead>
+                  <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('牌号', 'brandGrade')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">规格</TableHead>
-                  <TableHead className="text-[12px] text-right whitespace-nowrap">需求量</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">单位</TableHead>
+                  <TableHead className="text-[12px] text-right whitespace-nowrap">需求量</TableHead>
+                  <TableHead className="text-[12px] text-right whitespace-nowrap">初始需求量</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('期望完成时间', 'expectedCompletionDate')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('到货时间', 'deliveryDate')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">到货地点</TableHead>
+                  <TableHead className="text-[12px] whitespace-nowrap">采购订单</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">申请人</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap pr-4">申请人部门</TableHead>
                 </TableRow>
@@ -315,23 +342,31 @@ export default function AgeingPlanCreate() {
                         <GripVertical className="w-3.5 h-3.5 text-gray-300 m-auto" />
                       </TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap font-mono">{row.sequenceNumber}</TableCell>
+                      <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.documentNo}</TableCell>
+                      <TableCell className="text-[12px] px-2 !py-2 whitespace-nowrap">{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
                       <TableCell className="px-2 !py-2 whitespace-nowrap text-[12px] text-[#409eff]">{row.status}</TableCell>
+                      <TableCell className="px-2 !py-2 whitespace-nowrap">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded text-[10px] font-medium border",
+                          row.applicationType === '紧急' ? "bg-red-50 text-red-600 border-red-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                        )}>
+                          {row.applicationType || '普通'}
+                        </span>
+                      </TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productType}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productionType}</TableCell>
-                      <TableCell className="font-bold text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productName}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap font-mono text-[11px]">{row.productCode}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.customerName}>{row.customerName}</TableCell>
+                      <TableCell className="font-bold text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.specification}</TableCell>
-                      <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">
-                        {row.totalRequirementAmount}
-                      </TableCell>
-                      <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">
-                        {row.unit}
-                      </TableCell>
+                      <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.unit}</TableCell>
+                      <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.totalRequirementAmount}</TableCell>
+                      <TableCell className="text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.initialRequirementAmount?.toFixed(2)}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.expectedCompletionDate || '--'}</TableCell>
                       <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.deliveryDate || '--'}</TableCell>
                       <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.deliveryLocation || '--'}</TableCell>
+                      <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.purchaseOrder || '--'}</TableCell>
                       <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.applicantName || '--'}</TableCell>
                       <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap pr-4">{row.applicantDepartment || '--'}</TableCell>
                     </TableRow>
@@ -339,7 +374,7 @@ export default function AgeingPlanCreate() {
                 })}
                 {pendingPool.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={18} className="text-center py-20 text-gray-400 font-sans border-none">
+                    <TableCell colSpan={23} className="text-center py-20 text-gray-400 font-sans border-none">
                       暂无待排产的醇化计划需求
                     </TableCell>
                   </TableRow>

@@ -1,7 +1,7 @@
 import { Bell, Search, Maximize, Settings, UserCircle } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { menuItems } from './Sidebar';
-import { mockMonthlyAgingPlans } from '../../data/plan/monthlyAgingPlanData';
+import { mockMonthlyAgingPlans } from '../../data/plan/agingPlanData';
 
 const getRouteInfo = (pathname: string) => {
   if (pathname === '/') return { label: '首页' };
@@ -9,9 +9,19 @@ const getRouteInfo = (pathname: string) => {
   // Search in menuItems first
   for (const group of menuItems) {
     if (group.children) {
-      const child = group.children.find(c => c.path === pathname);
-      if (child) {
-        return { parent: group.label, label: child.label };
+      for (const child of group.children) {
+        if (child.path === pathname) {
+          return { parent: group.label, label: child.label };
+        }
+        // @ts-ignore
+        if (child.children) {
+          // @ts-ignore
+          for (const sub of child.children) {
+            if (sub.path === pathname) {
+              return { parent: child.label, label: sub.label };
+            }
+          }
+        }
       }
     } else if (group.path === pathname) {
       return { label: group.label };

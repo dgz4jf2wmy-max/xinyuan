@@ -5,7 +5,7 @@ import { Input } from '../../../../components/ui/input';
 import { Select } from '../../../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
 import { Pagination } from '../../../../components/ui/pagination';
-import { Search, RotateCcw, Plus, Edit } from 'lucide-react';
+import { Search, RotateCcw, Plus, Edit, ChevronDown } from 'lucide-react';
 import { MonthlyAgingPlan } from '../../../../types/monthly-plan';
 import { getAgeingPlanPage } from '../../../../data/plan/agingPlanData';
 
@@ -14,6 +14,7 @@ export default function AgeingPlanTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<MonthlyAgingPlan[]>([]);
   const [total, setTotal] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [queryParams, setQueryParams] = useState({
     planName: '',
@@ -93,9 +94,40 @@ export default function AgeingPlanTab() {
       </div>
 
       <div className="flex justify-end gap-2 mb-4 shrink-0">
-        <Button variant="primary" onClick={() => navigate('/plan/monthly/aging/create')}>
-          <Plus className="w-3.5 h-3.5 mr-1" /> 新增醇化计划
-        </Button>
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsDropdownOpen(true)}
+          onMouseLeave={() => setIsDropdownOpen(false)}
+        >
+          <Button variant="primary" className="pr-2 cursor-pointer shrink-0" onClick={() => navigate('/plan/monthly/aging/create')}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> 新增醇化计划 <ChevronDown className="w-3.5 h-3.5 ml-1" />
+          </Button>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full pt-1 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="bg-white border border-[#ebeef5] rounded shadow-lg py-1 w-40 flex flex-col items-stretch">
+                <div 
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    navigate('/plan/monthly/create');
+                  }}
+                >
+                  月度产销计划
+                </div>
+                <div 
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    navigate('/plan/monthly/aging/create');
+                  }}
+                >
+                  月度醇化计划
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Table Content */}
@@ -148,6 +180,16 @@ export default function AgeingPlanTab() {
                         >
                           {row.status === '草稿中' ? '编辑' : '查看'}
                         </Button>
+                        {row.status === '已发布' && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-[#e6a23c] px-2 hover:bg-orange-50" 
+                            onClick={() => navigate('/plan/monthly/aging/create', { state: { sourceId: row.sequenceNumber } })}
+                          >
+                            调整
+                          </Button>
+                        )}
                         {row.status === '草稿中' && (
                           <Button variant="ghost" size="sm" className="text-[#f56c6c] px-2 hover:bg-red-50">
                             删除

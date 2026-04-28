@@ -16,6 +16,7 @@ import AnnualPlanAdjust from './pages/plan/annual/adjust';
 import ProductionPoolList from './pages/plan/pool';
 import PlanPoolApplicationList from './pages/plan/application';
 import CustomerLedger from './pages/customer/index';
+import SubBrandLedger from './pages/base/sub-brand/index';
 
 import MonthlyProductionPlanIndex from './pages/plan/monthly';
 import MonthlyProductionPlanCreate from './pages/plan/monthly/create';
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="plan/execution/analysis" element={<PlanExecutionAnalysis />} />
           <Route path="plan/execution/dashboard" element={<PlanExecutionDashboard />} />
           <Route path="customer/ledger" element={<CustomerLedger />} />
+          <Route path="base/sub-brand" element={<SubBrandLedger />} />
           <Route path="system/user" element={<UserManagement />} />
           <Route path="system/role" element={<RoleManagement />} />
           <Route path="system/position" element={<PositionManagement />} />
