@@ -176,7 +176,7 @@ export default function ProductionPlanTab() {
                               size="sm" 
                               className="text-[#e6a23c] h-6 px-2"
                               onClick={() => {
-                                navigate('/plan/monthly/create', { state: { sourceId: row.id } });
+                                navigate(`/plan/monthly/adjust/${row.id}`);
                               }}
                             >
                               调整

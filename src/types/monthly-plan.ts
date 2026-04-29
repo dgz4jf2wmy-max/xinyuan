@@ -54,6 +54,9 @@ export interface MonthlyProductionPlanTable {
   /** 产量/吨: 数字(.00), 只读 */
   productionVolume: number;
   
+  /** 报工产量/吨: 数字(.00), 只读 约束：查看、编制与导出时不可见，仅调整时可见 */
+  reportedProductionVolume?: number;
+
   /** 备注: 字符(250), 选填 */
   remarks?: string;
 }
@@ -88,17 +91,23 @@ export interface MonthlyProductionPlanDetail {
   /** 需求量: 数字(.00), 只读 (关联：计划池入池申请台账) */
   requirementAmount: number;
   
+  /** 初始需求量: 数字(.00), 只读 (关联：计划池入池申请台账) 约束：查看、编制与导出时不可见，仅调整时可见 */
+  initialRequirementAmount?: number;
+  
+  /** 申请完工量: 数字(.00), 只读 (关联：计划池入池申请台账) 约束：查看、编制与导出时不可见，仅调整时可见 */
+  appliedCompletionAmount?: number;
+  
   /** 单位: 字符(10), 只读 (关联：计划池入池申请台账) */
   unit: string;
   
   /** 无税单价: 数字(.00), 只读 (关联：计划池入池申请台账) */
-  unitPriceExclTax: number;
+  unitPriceExclTax?: number;
   
   /** 含税单价: 数字(.00), 只读 (关联：计划池入池申请台账) */
-  unitPriceInclTax: number;
+  unitPriceInclTax?: number;
   
   /** 无税金额: 数字(.00), 只读 (关联：计划池入池申请台账) */
-  amountExclTax: number;
+  amountExclTax?: number;
   
   /** 期望完成时间: 时间(yyyy-mm-dd), 选填 (关联：计划池入池申请台账) */
   expectedCompletionDate?: string;
@@ -110,10 +119,10 @@ export interface MonthlyProductionPlanDetail {
   deliveryLocation?: string;
   
   /** 申请人: 只读 (关联：计划池入池申请台账) */
-  applicantName: string;
+  applicantName?: string;
   
   /** 申请人部门: 只读 (关联：计划池入池申请台账) */
-  applicantDepartment: string;
+  applicantDepartment?: string;
   
   /** 
    * 分牌号: 字符(50), 只读 
@@ -275,12 +284,16 @@ export interface MonthlyAgingPlanItem {
   sequenceNumber: number;
   /** 牌号: 字符(20), 必填 */
   brandName: string;
+  /** 目前可用库存量: 数字(0.), 只读. 约束：详情查看与编制时不可见 */
+  availableInventory?: number;
   /** 年月份: 时间（mm）, 必填 */
   month: string;
   /** 分牌号和等级: 字符(50), 必填 */
   subBrandGrade: string;
   /** 箱数: 数字(0.), 必填 */
   boxCount: number;
+  /** 申请完工量: 数字(0.), 只读. 约束：详情查看与编制时不可见 */
+  appliedCompletionAmount?: number;
   /** 日期: 字符(50), 必填 */
   date: string;
   /** 码段计划号: 字符(50), 选填 */

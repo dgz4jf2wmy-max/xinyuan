@@ -338,23 +338,23 @@ export default function AnnualPlanDetailView() {
           </div>
         )}
 
-        <div className="border border-[#ebeef5] rounded overflow-hidden">
+        <div className="border border-[#ebeef5] rounded [&>div]:overflow-visible">
           <Table className="border-collapse w-full">
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">
               <TableRow className="bg-[#f5f7fa]">
-                <TableHead className="w-16 text-center text-[#303133] font-bold">序号</TableHead>
-                <TableHead className="w-24 text-center text-[#303133] font-bold">产品类型</TableHead>
-                <TableHead className="w-40 text-center text-[#303133] font-bold">客户名称</TableHead>
-                <TableHead className="w-40 text-center text-[#303133] font-bold">牌号</TableHead>
-                <TableHead className="w-28 text-center text-[#409eff] font-bold">预计销售量</TableHead>
+                <TableHead className="w-16 text-center text-[#303133] font-bold bg-[#f5f7fa]">序号</TableHead>
+                <TableHead className="w-24 text-center text-[#303133] font-bold bg-[#f5f7fa]">产品类型</TableHead>
+                <TableHead className="w-40 text-center text-[#303133] font-bold bg-[#f5f7fa]">客户名称</TableHead>
+                <TableHead className="w-40 text-center text-[#303133] font-bold bg-[#f5f7fa]">牌号</TableHead>
+                <TableHead className="w-28 text-center text-[#409eff] font-bold bg-[#f5f7fa]">预计销售量</TableHead>
                 {!isInitialVersionView && (
                   <>
-                    <TableHead className="w-24 text-center text-[#303133] font-bold">期初库存</TableHead>
-                    <TableHead className="w-24 text-center text-[#303133] font-bold">备产数量</TableHead>
+                    <TableHead className="w-24 text-center text-[#303133] font-bold bg-[#f5f7fa]">期初库存</TableHead>
+                    <TableHead className="w-24 text-center text-[#303133] font-bold bg-[#f5f7fa]">备产数量</TableHead>
                   </>
                 )}
-                <TableHead className="w-28 text-center text-[#303133] font-bold">预计生产量</TableHead>
-                <TableHead className="w-32 text-center text-[#303133] font-bold">销售单价元/公斤<br/>(不含税)</TableHead>
+                <TableHead className="w-28 text-center text-[#303133] font-bold bg-[#f5f7fa]">预计生产量</TableHead>
+                <TableHead className="w-32 text-center text-[#303133] font-bold bg-[#f5f7fa]">销售单价元/公斤<br/>(不含税)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -518,9 +518,9 @@ export default function AnnualPlanDetailView() {
         </div>
 
         {/* 内容区 */}
-        <div className={clsx("flex-1 overflow-y-auto relative", activeTab === 'flow' ? 'bg-white' : 'bg-white p-6')}>
+        <div className={clsx("flex-1 overflow-y-auto relative bg-white")}>
           {activeTab === 'form' && (
-            <div className="space-y-10">
+            <div className="space-y-10 p-6">
               {/* 表单数据 */}
               <div className="bg-white">
                 {renderFormData()}

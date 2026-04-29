@@ -75,7 +75,7 @@ export function PrintPreviewDialog({ isOpen, onClose, title = '打印预览', ch
         
         {/* Content Area (Will be printed) */}
         <div className="flex-1 overflow-y-auto p-8 flex justify-center print:overflow-visible print:p-0 print-safe-area bg-[#f5f7fa] print:bg-white">
-          <div className="bg-white shadow border border-gray-200 print:shadow-none print:border-none mx-auto w-max min-w-full print:w-auto relative h-fit min-h-max">
+          <div className="bg-white shadow border border-gray-200 print:shadow-none print:border-none mx-auto w-full max-w-[800px] print:max-w-none print:w-auto relative">
             {children}
           </div>
         </div>

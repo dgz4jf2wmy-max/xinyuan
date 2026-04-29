@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
 import { Select } from '../../../../components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
 import { getPoolPage } from '../../../../data/plan/productionPoolData';
-import { mockMonthlyProductionPlans } from '../../../../data/plan/monthlyPlanData';
 import { ProductionPlanPool } from '../../../../types/production-pool';
 import { ProductType } from '../../../../types/plan';
 import { AlertTriangle, GripVertical, ArrowRight, ChevronDown, ChevronUp, ChevronRight, ArrowUpDown } from 'lucide-react';
@@ -16,8 +15,6 @@ import { cn } from '../../../../lib/utils';
 
 export default function MonthlyProductionPlanCreate() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const sourceId = location.state?.sourceId;
 
   const [planName, setPlanName] = useState('');
   const [activeCategory, setActiveCategory] = useState<'raw_material' | 'flavor'>('raw_material');
@@ -66,63 +63,7 @@ export default function MonthlyProductionPlanCreate() {
     getPoolPage({ status: '待计划', pageNum: 1, pageSize: 100 }).then(res => {
       setPendingPool(res.list.filter(p => p.status === '待计划'));
     });
-
-    if (sourceId) {
-      const sourcePlan = mockMonthlyProductionPlans.find(p => p.id === sourceId);
-      if (sourcePlan) {
-        setPlanName(sourcePlan.planName + ' (调整)');
-        
-        if (sourcePlan.planList && sourcePlan.planList.length > 0) {
-          setDraftTables(sourcePlan.planList);
-          setDraftDetails(sourcePlan.details);
-        } else {
-          // Add fallback data for the demo if it's empty
-          setDraftTables([
-            {
-              id: `tb-${Date.now()}-1`,
-              sequenceNumber: 1,
-              productType: '再造梗丝',
-              brandGrade: 'GS22',
-              productionVolume: 35,
-              remarks: '复用原版本计划'
-            },
-            {
-              id: `tb-${Date.now()}-2`,
-              sequenceNumber: 2,
-              productType: '再造烟叶',
-              brandGrade: 'HBZY-10',
-              productionVolume: 120,
-              remarks: '需协调外部原料'
-            }
-          ]);
-          setDraftDetails([
-            {
-               id: `dt-${Date.now()}-1`,
-               productType: '再造梗丝',
-               productionType: '再造梗丝配方生产（成品）',
-               productName: '再造梗丝（省内）',
-               productCode: '010210001',
-               customerName: '江苏中烟工业有限责任公司',
-               brandGrade: 'GS22',
-               specification: '15',
-               requirementAmount: 35,
-               unit: '吨',
-               unitPriceExclTax: 12000,
-               unitPriceInclTax: 13560,
-               amountExclTax: 420000,
-               expectedCompletionDate: '2026-04-15',
-               deliveryDate: '2026-04-20',
-               deliveryLocation: '江苏省南京市',
-               applicantName: '李建国',
-               applicantDepartment: '计划部',
-               subBrandGrade: 'GS22-01',
-               applicationLedgerId: 'pool-1'
-            }
-          ]);
-        }
-      }
-    }
-  }, [sourceId]);
+  }, []);
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -302,7 +243,7 @@ export default function MonthlyProductionPlanCreate() {
     const poolItemsToReturn = detailsToReturn.map(d => ({
        id: d.applicationLedgerId || d.id,
        sequenceNumber: pendingPool.length + 1,
-       documentNo: '',
+       documentNo: `DD20260501${Math.floor(Math.random()*1000)}`,
        status: '待计划',
        applicationType: '普通',
        productType: d.productType,
@@ -327,6 +268,53 @@ export default function MonthlyProductionPlanCreate() {
     setPendingPool([...pendingPool, ...poolItemsToReturn]);
     setDraftDetails(draftDetails.filter(d => !(d.brandGrade === tableToRemove.brandGrade && d.productType === tableToRemove.productType)));
     setDraftTables(draftTables.filter(t => t.id !== tableId).map((t, idx) => ({ ...t, sequenceNumber: idx + 1 })));
+  };
+
+  const handleRemoveDetail = (detailId: string) => {
+    const detailToRemove = draftDetails.find(d => d.id === detailId);
+    if (!detailToRemove) return;
+
+    // Return item to pool
+    const poolItemToReturn = {
+       id: detailToRemove.applicationLedgerId || detailToRemove.id,
+       sequenceNumber: pendingPool.length + 1,
+       documentNo: `DD20260501${Math.floor(Math.random()*1000)}`,
+       status: '待计划',
+       applicationType: '普通',
+       productType: detailToRemove.productType,
+       productionType: detailToRemove.productionType,
+       productName: detailToRemove.productName,
+       productCode: detailToRemove.productCode,
+       customerName: detailToRemove.customerName,
+       brandGrade: detailToRemove.brandGrade,
+       specification: detailToRemove.specification,
+       unit: detailToRemove.unit,
+       requirements: [],
+       totalRequirementAmount: detailToRemove.requirementAmount,
+       initialRequirementAmount: detailToRemove.requirementAmount,
+       expectedCompletionDate: detailToRemove.expectedCompletionDate,
+       deliveryDate: detailToRemove.deliveryDate,
+       deliveryLocation: detailToRemove.deliveryLocation,
+       purchaseOrder: '',
+       applicantName: detailToRemove.applicantName || '',
+       applicantDepartment: detailToRemove.applicantDepartment || '',
+    } as ProductionPlanPool;
+
+    setPendingPool([...pendingPool, poolItemToReturn]);
+    
+    // Adjust draft details
+    setDraftDetails(draftDetails.filter(d => d.id !== detailId));
+    
+    // Adjust draft tables (aggregate)
+    setDraftTables(prev => {
+      let updatedTables = prev.map(t => {
+        if (t.brandGrade === detailToRemove.brandGrade && t.productType === detailToRemove.productType) {
+          return { ...t, productionVolume: t.productionVolume - detailToRemove.requirementAmount };
+        }
+        return t;
+      }).filter(t => t.productionVolume > 0);
+      return updatedTables.map((t, idx) => ({ ...t, sequenceNumber: idx + 1 }));
+    });
   };
 
   const updateTableRemark = (tableId: string, remarks: string) => {
@@ -443,7 +431,7 @@ export default function MonthlyProductionPlanCreate() {
                     <TableHead className="w-8 px-0"></TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">序号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">单据编号</TableHead>
-                    <TableHead className="text-[12px] whitespace-nowrap">变更表示</TableHead>
+                    <TableHead className="text-[12px] whitespace-nowrap">牌号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">状态</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">申请类型</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">产品类型</TableHead>
@@ -451,7 +439,6 @@ export default function MonthlyProductionPlanCreate() {
                     <TableHead className="text-[12px] whitespace-nowrap">产品名称</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">产品编号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">客户名称</TableHead>
-                    <TableHead className="text-[12px] whitespace-nowrap">牌号</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">规格</TableHead>
                     <TableHead className="text-[12px] whitespace-nowrap">单位</TableHead>
                     <TableHead className="text-[12px] text-right whitespace-nowrap">需求量</TableHead>
@@ -478,7 +465,7 @@ export default function MonthlyProductionPlanCreate() {
                         <React.Fragment key={groupName}>
                           {/* 分组表头行 */}
                           <TableRow className="bg-[#f0f2f5] hover:bg-[#f0f2f5]">
-                            <TableCell colSpan={23} className="py-2.5 text-[12px] font-semibold text-[#303133] border-t border-[#ebeef5]">
+                            <TableCell colSpan={22} className="py-2.5 text-[12px] font-semibold text-[#303133] border-t border-[#ebeef5]">
                               <span className="text-[#409eff] mr-2">◗</span>
                               {groupName} 
                               <span className="ml-2 text-[10px] font-normal text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
@@ -514,7 +501,7 @@ export default function MonthlyProductionPlanCreate() {
                                 </TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.sequenceNumber}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.documentNo}</TableCell>
-                                <TableCell className="text-[12px] px-2 !py-2 whitespace-nowrap">{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
+                                <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                                 <TableCell className="px-2 !py-2 whitespace-nowrap text-[12px] text-[#409eff]">{row.status}</TableCell>
                                 <TableCell className="px-2 !py-2 whitespace-nowrap">
                                   <span className={cn(
@@ -529,7 +516,6 @@ export default function MonthlyProductionPlanCreate() {
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productName}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productCode}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.customerName}>{row.customerName}</TableCell>
-                                <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                                 <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.specification}</TableCell>
                                 <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.unit}</TableCell>
                                 <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.totalRequirementAmount}</TableCell>
@@ -574,7 +560,7 @@ export default function MonthlyProductionPlanCreate() {
                           </TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.sequenceNumber}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.documentNo}</TableCell>
-                          <TableCell className="text-[12px] px-2 !py-2 whitespace-nowrap">{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
+                          <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                           <TableCell className="px-2 !py-2 whitespace-nowrap text-[12px] text-[#409eff]">{row.status}</TableCell>
                           <TableCell className="px-2 !py-2 whitespace-nowrap">
                             <span className={cn(
@@ -589,7 +575,6 @@ export default function MonthlyProductionPlanCreate() {
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productName}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productCode}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.customerName}>{row.customerName}</TableCell>
-                          <TableCell className="font-medium text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                           <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.specification}</TableCell>
                           <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.unit}</TableCell>
                           <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">
@@ -608,7 +593,7 @@ export default function MonthlyProductionPlanCreate() {
                   )}
                   {currentPendingPool.length === 0 && (
                     <TableRow>
-                       <TableCell colSpan={23} className="text-center py-16 text-gray-400 border-none">暂无对应类型的待处理需求</TableCell>
+                       <TableCell colSpan={22} className="text-center py-16 text-gray-400 border-none">暂无对应类型的待处理需求</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -699,40 +684,74 @@ export default function MonthlyProductionPlanCreate() {
                         {isExpanded && (
                           <TableRow className="bg-[#fcfdfe] hover:bg-[#fcfdfe] border-b-0 shadow-inner">
                             <TableCell colSpan={7} className="p-0">
-                              <div className="px-10 py-3 border-l-2 border-blue-400 ml-4 mb-2">
-                                <div className="flex justify-between items-center mb-2">
-                                  <p className="text-[11px] font-bold text-gray-500 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
-                                    编制明细构成 ({details.length} 项记录)
-                                  </p>
-                                </div>
-                                <Table className="border border-gray-100 rounded-sm">
-                                  <TableHeader className="bg-gray-50/50">
-                                    <TableRow className="h-7 hover:bg-transparent">
-                                      <TableHead className="text-[10px] h-7">分牌号</TableHead>
-                                      <TableHead className="text-[10px] h-7">客户名称</TableHead>
-                                      <TableHead className="text-right text-[10px] h-7">需求量</TableHead>
-                                      <TableHead className="text-[10px] h-7">期望完成时间</TableHead>
-                                      <TableHead className="text-[10px] h-7">到货时间</TableHead>
-                                      <TableHead className="text-[10px] h-7">交货地点</TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {details.map(d => (
-                                      <TableRow key={d.id} className="h-7 border-b-gray-50">
-                                        <TableCell className="text-[11px] py-1 text-blue-600 font-mono">{d.subBrandGrade}</TableCell>
-                                        <TableCell className="text-[11px] py-1 text-gray-600">{d.customerName}</TableCell>
-                                        <TableCell className="text-[11px] py-1 text-right font-medium">{d.requirementAmount.toFixed(2)}</TableCell>
-                                        <TableCell className="text-[11px] py-1 text-gray-400">{d.expectedCompletionDate || '-'}</TableCell>
-                                        <TableCell className="text-[11px] py-1 text-gray-400">{d.deliveryDate || '-'}</TableCell>
-                                        <TableCell className="text-[11px] py-1 text-gray-400 truncate max-w-[150px]">{d.deliveryLocation || '-'}</TableCell>
+                              <div className="w-0 min-w-full">
+                                <div className="px-6 py-3 border-l-2 border-blue-400 ml-4 mb-2">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <p className="text-[11px] font-bold text-gray-500 flex items-center">
+                                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
+                                      编制明细构成 ({details.length} 项记录)
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <Table className="border border-gray-100 rounded-sm w-full bg-white relative">
+                                      <TableHeader className="bg-gray-50/50">
+                                        <TableRow className="h-7 hover:bg-transparent">
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">产品类型</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">生产类型</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">产品名称</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">产品编号</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">客户名称</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">牌号</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">规格</TableHead>
+                                        <TableHead className="text-right text-[10px] h-7 whitespace-nowrap">需求量</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">单位</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">期望完成时间</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">到货时间</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">到货地点</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">申请人</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">申请人部门</TableHead>
+                                        <TableHead className="text-[10px] h-7 whitespace-nowrap">分牌号</TableHead>
+                                        <TableHead className="text-center text-[10px] h-7 w-12 whitespace-nowrap sticky right-0 bg-[#f8f9fa] shadow-[-1px_0_0_#ebeef5] z-10">操作</TableHead>
                                       </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {details.map(d => (
+                                        <TableRow key={d.id} className="h-7 border-b-gray-50 bg-white">
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.productType || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.productionType || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.productName || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.productCode || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.customerName || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.brandGrade || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.specification || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-right font-medium whitespace-nowrap">{d.requirementAmount?.toFixed(2) || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.unit || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-400 whitespace-nowrap">{d.expectedCompletionDate || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-400 whitespace-nowrap">{d.deliveryDate || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-400 truncate max-w-[150px] whitespace-nowrap">{d.deliveryLocation || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.applicantName || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-gray-600 whitespace-nowrap">{d.applicantDepartment || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-blue-600 font-mono whitespace-nowrap">{d.subBrandGrade || '-'}</TableCell>
+                                          <TableCell className="text-[11px] py-1 text-center whitespace-nowrap sticky right-0 bg-[#fff] shadow-[-1px_0_0_#ebeef5] z-10 group-hover:bg-[#f5f7fa]">
+                                            <button 
+                                              className="text-red-500 hover:text-red-700 cursor-pointer text-[11px]"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveDetail(d.id);
+                                              }}
+                                            >
+                                              移除
+                                            </button>
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                         )}
                        </React.Fragment>
                      );

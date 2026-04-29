@@ -924,7 +924,7 @@ export default function PlanExecutionAnalysis() {
                  <Target className="w-48 h-48 -mr-10 -mt-10" />
               </div>
               <h3 className="text-[14px] font-bold text-[#909399] flex items-center mb-4 tracking-wider">
-                <Target className="w-5 h-5 mr-2" /> 全厂本年累计生产达成率
+                <Target className="w-5 h-5 mr-2" /> 全厂本年累计计划达成率
               </h3>
               <div className="flex items-baseline mb-3">
                 <span className="text-5xl font-black text-[#409eff] tracking-tighter">
@@ -966,7 +966,7 @@ export default function PlanExecutionAnalysis() {
                       
                       <div>
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[13px] font-medium text-gray-600">生产达成率</span>
+                          <span className="text-[13px] font-medium text-gray-600">计划达成率</span>
                           <div className="text-right">
                             <span className="text-xl font-bold text-[#409eff] leading-none">{prodPercent}%</span>
                           </div>
@@ -982,7 +982,7 @@ export default function PlanExecutionAnalysis() {
 
                       <div>
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[13px] font-medium text-gray-600">销售达成率</span>
+                          <span className="text-[13px] font-medium text-gray-600">发货进度</span>
                           <div className="text-right">
                             <span className="text-xl font-bold text-[#67c23a] leading-none">{salesPercent}%</span>
                           </div>

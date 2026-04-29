@@ -44,7 +44,17 @@ const getRouteInfo = (pathname: string) => {
     return { parent: '计划管理', label: plan ? plan.planName : '2026年6月月度醇化计划' };
   }
   
+  if (pathname.startsWith('/plan/monthly/aging/adjust/')) {
+    const id = pathname.split('/').pop();
+    const plan = mockMonthlyAgingPlans.find(p => p.sequenceNumber === Number(id));
+    return { parent: '计划管理', label: plan ? plan.planName : '月度醇化计划调整' };
+  }
+  
   if (pathname.startsWith('/plan/monthly/detail/')) {
+    return { parent: '月度产销计划', label: '鑫源公司2026年4月份产销计划' };
+  }
+  
+  if (pathname.startsWith('/plan/monthly/adjust/')) {
     return { parent: '月度产销计划', label: '鑫源公司2026年4月份产销计划' };
   }
   

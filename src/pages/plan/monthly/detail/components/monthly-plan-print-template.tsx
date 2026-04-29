@@ -22,7 +22,7 @@ export const MonthlyPlanPrintTemplate: React.FC<MonthlyPlanPrintTemplateProps> =
       </div>
 
       <div className="flex justify-end mb-4 text-sm font-medium">
-        <div>编制日期：{data.createTime.split(' ')[0]}</div>
+        <div>编制日期：{data.createTime ? data.createTime.split(' ')[0] : ''}</div>
       </div>
 
       <table className="w-full border-collapse border border-black mb-8">
@@ -41,14 +41,14 @@ export const MonthlyPlanPrintTemplate: React.FC<MonthlyPlanPrintTemplateProps> =
               <td className="border border-black p-2 text-[10px] text-center">{index + 1}</td>
               <td className="border border-black p-2 text-[10px]">{item.productType}</td>
               <td className="border border-black p-2 text-[10px] font-bold">{item.brandGrade}</td>
-              <td className="border border-black p-2 text-[10px] text-right font-medium">{item.productionVolume.toFixed(3)}</td>
+              <td className="border border-black p-2 text-[10px] text-right font-medium">{(item.productionVolume || 0).toFixed(3)}</td>
               <td className="border border-black p-2 text-[10px]">{item.remarks}</td>
             </tr>
           ))}
           <tr className="font-bold h-10 bg-gray-50">
             <td colSpan={3} className="border border-black p-2 text-[10px] text-center">合计</td>
             <td className="border border-black p-2 text-[10px] text-right">
-              {items.reduce((sum, item) => sum + item.productionVolume, 0).toFixed(3)}
+              {items.reduce((sum, item) => sum + (item.productionVolume || 0), 0).toFixed(3)}
             </td>
             <td className="border border-black p-2 text-[10px]"></td>
           </tr>

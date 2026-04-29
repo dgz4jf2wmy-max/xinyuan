@@ -232,21 +232,21 @@ export default function MonthlyProductionPlanDetailView() {
               </span>
             </div>
           )}
-          <div className="bg-white border border-gray-200 rounded-sm overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-sm">
             <div className="px-4 py-2.5 bg-[#f8f9fb] border-b border-gray-200 flex justify-between items-center">
               <span className="font-bold text-[13px] text-gray-700">月度产销计划表 ({activeCategory === 'raw_material' ? '再造原料' : '香精香料'})</span>
             </div>
             
-            <div className="overflow-auto bg-white">
+            <div className="bg-white [&>div]:overflow-visible">
               <Table>
-                <TableHeader className="bg-[#f5f7fa] sticky top-0 z-10 shadow-sm">
+                <TableHeader className="bg-[#f5f7fa] sticky top-[0px] z-20 shadow-[0_1px_0_#ebeef5]">
                   <TableRow>
-                    <TableHead className="w-10 p-0 text-center"></TableHead>
-                    <TableHead className="w-16 text-center text-[12px] font-bold text-gray-600">序号</TableHead>
-                    <TableHead className="text-[12px] w-32 font-bold text-gray-600">产品类别</TableHead>
-                    <TableHead className="text-[12px] min-w-[200px] font-bold text-gray-600">牌号</TableHead>
-                    <TableHead className="text-right text-[12px] w-32 font-bold text-gray-600">总产量/吨</TableHead>
-                    <TableHead className="text-[12px] font-bold text-gray-600">备注</TableHead>
+                    <TableHead className="w-10 p-0 text-center bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]"></TableHead>
+                    <TableHead className="w-16 text-center text-[12px] font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">序号</TableHead>
+                    <TableHead className="text-[12px] w-32 font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">产品类别</TableHead>
+                    <TableHead className="text-[12px] min-w-[200px] font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">牌号</TableHead>
+                    <TableHead className="text-right text-[12px] w-32 font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">总产量/吨</TableHead>
+                    <TableHead className="text-[12px] font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">备注</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -303,50 +303,64 @@ export default function MonthlyProductionPlanDetailView() {
                             {isExpanded && (
                               <TableRow className="bg-[#fcfdfe] hover:bg-[#fcfdfe] border-b-0 shadow-inner">
                                 <TableCell colSpan={6} className="p-0">
-                                  <div className="px-10 py-3 border-l-2 border-blue-400 ml-4 mb-2">
-                                    <div className="flex justify-between items-center mb-2">
-                                      <span className="text-[12px] font-bold text-gray-600">编排明细溯源 (共 {details.length} 条需求来源)</span>
-                                    </div>
-                                    <div className="border border-gray-200 rounded-sm overflow-hidden bg-white">
-                                      <Table>
-                                        <TableHeader className="bg-[#f5f7fa]">
+                                  <div className="w-0 min-w-[100%]">
+                                    <div className="px-10 py-3 border-l-2 border-blue-400 ml-4 mb-2">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-[12px] font-bold text-gray-600">编排明细溯源 (共 {details.length} 条需求来源)</span>
+                                      </div>
+                                      <div className="border border-gray-200 rounded-sm overflow-hidden bg-white">
+                                        <Table className="relative w-full">
+                                          <TableHeader className="bg-[#f5f7fa]">
                                           <TableRow>
-                                            <TableHead className="w-12 text-center text-[10px] text-gray-500 py-1.5 h-auto">排号</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto">牌号</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto">产品名称</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto">客户</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto">规格</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto text-right">需求量</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto text-right">无税单价</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto text-right">无税金额</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto">期望到货</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto">申请人</TableHead>
+                                            <TableHead className="w-12 text-center text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">排号</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">产品类型</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">生产类型</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">产品名称</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">产品编号</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">客户名称</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">牌号</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">规格</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap text-right">需求量</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">单位</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">期望完成时间</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">到货时间</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">到货地点</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">申请人</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">申请人部门</TableHead>
+                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">分牌号</TableHead>
                                           </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                           {details.map((d, dIdx) => (
                                             <TableRow key={d.id} className="hover:bg-blue-50/50">
-                                              <TableCell className="text-center font-medium text-gray-400 text-[10px] py-1">{dIdx + 1}</TableCell>
-                                              <TableCell className="font-medium text-gray-700 text-[10px] py-1">{d.brandGrade}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1">{d.productName}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1">{d.customerName}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1">{d.specification}</TableCell>
-                                              <TableCell className="font-bold text-gray-600 text-right text-[10px] py-1">
-                                                {d.requirementAmount} {d.unit}
+                                              <TableCell className="text-center font-medium text-gray-400 text-[10px] py-1 whitespace-nowrap">{dIdx + 1}</TableCell>
+                                              <TableCell className="font-medium text-gray-700 text-[10px] py-1 whitespace-nowrap">{d.productType || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.productionType || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.productName || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.productCode || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.customerName || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.brandGrade || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.specification || '-'}</TableCell>
+                                              <TableCell className="font-bold text-gray-600 text-right text-[10px] py-1 whitespace-nowrap">
+                                                {d.requirementAmount}
                                               </TableCell>
-                                              <TableCell className="text-gray-500 text-right text-[10px] py-1">{d.unitPriceExclTax}</TableCell>
-                                              <TableCell className="text-gray-500 text-right text-[10px] py-1">{d.amountExclTax}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1">{d.expectedCompletionDate}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1">{d.applicantName}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.unit || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.expectedCompletionDate || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.deliveryDate || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap max-w-[150px] truncate">{d.deliveryLocation || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.applicantName || '-'}</TableCell>
+                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.applicantDepartment || '-'}</TableCell>
+                                              <TableCell className="font-medium text-blue-600 text-[10px] py-1 whitespace-nowrap">{d.subBrandGrade || '-'}</TableCell>
                                             </TableRow>
                                           ))}
                                         </TableBody>
                                       </Table>
                                     </div>
                                   </div>
-                                </TableCell>
-                              </TableRow>
-                            )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
                            </React.Fragment>
                          );
                        })}

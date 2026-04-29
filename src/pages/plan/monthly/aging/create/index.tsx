@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
 import { Input } from '../../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../../components/ui/table';
@@ -13,8 +13,6 @@ import { cn } from '../../../../../lib/utils';
 
 export default function AgeingPlanCreate() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const sourceId = location.state?.sourceId;
 
   const [planName, setPlanName] = useState('');
   
@@ -29,20 +27,31 @@ export default function AgeingPlanCreate() {
 
   // Grouped items for rendering with rowSpan
   const groupData = useMemo(() => {
-    const result: (MonthlyAgingPlanItem & { poolItem: ProductionPlanPool; brandSpan?: number })[] = [];
+    const result: (MonthlyAgingPlanItem & { poolItem: ProductionPlanPool; brandSpan?: number; brandHasError?: boolean; brandTotalBoxCount?: number })[] = [];
     let currentBrand = '';
     let brandStartIndex = -1;
 
+    // Calculate sums first
+    const brandSums: Record<string, number> = {};
+    const brandInventories: Record<string, number> = {};
+    items.forEach(item => {
+      brandSums[item.brandName] = (brandSums[item.brandName] || 0) + (Number(item.boxCount) || 0);
+      if (item.availableInventory !== undefined) {
+         brandInventories[item.brandName] = item.availableInventory;
+      }
+    });
+
     items.forEach((item, index) => {
+      const hasError = brandInventories[item.brandName] !== undefined && brandSums[item.brandName] > brandInventories[item.brandName];
       if (item.brandName !== currentBrand) {
         if (brandStartIndex !== -1) {
           result[brandStartIndex].brandSpan = result.length - brandStartIndex;
         }
         currentBrand = item.brandName;
         brandStartIndex = result.length;
-        result.push({ ...item, brandSpan: 1 });
+        result.push({ ...item, brandSpan: 1, brandHasError: hasError, brandTotalBoxCount: brandSums[item.brandName] });
       } else {
-        result.push({ ...item, brandSpan: 0 });
+        result.push({ ...item, brandSpan: 0, brandHasError: hasError, brandTotalBoxCount: brandSums[item.brandName] });
       }
     });
 
@@ -64,25 +73,7 @@ export default function AgeingPlanCreate() {
       const agingPool = res.list.filter(p => p.productionType?.includes('醇化'));
       setPendingPool(agingPool);
     });
-
-    if (sourceId) {
-      const sourcePlan = mockMonthlyAgingPlans.find(plan => plan.sequenceNumber === Number(sourceId));
-      if (sourcePlan) {
-        setPlanName(sourcePlan.planName + ' (调整)');
-        
-        const selectedItems = mockMonthlyAgingPlanItems.map((v, index) => ({
-          ...v,
-          poolItem: {
-             id: 'mock-pool-aging-' + index,
-             documentNo: 'mock-doc',
-             productType: '再造烟叶',
-             brandGrade: v.brandName,
-          } as any
-        }));
-        setItems(selectedItems);
-      }
-    }
-  }, [sourceId]);
+  }, []);
 
   const handleSelectPoolItem = (id: string) => {
     const newKeys = new Set(selectedPoolIds);
@@ -113,7 +104,11 @@ export default function AgeingPlanCreate() {
   const updateItem = (seq: number, field: keyof MonthlyAgingPlanItem, value: any) => {
     setItems(items.map(item => {
       if (item.sequenceNumber === seq) {
-        return { ...item, [field]: value };
+        const updatedItem = { ...item, [field]: value };
+        if (field === 'boxCount') {
+           updatedItem.appliedCompletionAmount = value;
+        }
+        return updatedItem;
       }
       return item;
     }));
@@ -195,12 +190,16 @@ export default function AgeingPlanCreate() {
         let updatedPendingPool = [...pendingPool];
         
         droppedItems.forEach(item => {
+           const boxAmount = Math.ceil(item.totalRequirementAmount / 0.05);
+           const mockInventory = item.brandGrade === 'GS01' ? 15000 : 20000;
            newPlanItems.push({
               sequenceNumber: items.length + newPlanItems.length + 1,
               brandName: item.brandGrade || '', // 总牌号 GS60
               month: item.deliveryDate ? `${parseInt(item.deliveryDate.split('-')[1], 10)}月` : '/',
               subBrandGrade: item.productName || '', // 分牌号 GS6001
-              boxCount: Math.ceil(item.totalRequirementAmount / 0.05),
+              boxCount: boxAmount,
+              appliedCompletionAmount: boxAmount,
+              availableInventory: mockInventory,
               date: '实时生产日期',
               processPlanNumber: '', // Default empty as per image
               remarks: '',
@@ -233,6 +232,24 @@ export default function AgeingPlanCreate() {
       alert('请填写计划名称');
       return;
     }
+
+    const brandSums: Record<string, number> = {};
+    const brandInventories: Record<string, number> = {};
+    
+    for (const item of items) {
+       brandSums[item.brandName] = (brandSums[item.brandName] || 0) + (Number(item.boxCount) || 0);
+       if (item.availableInventory !== undefined) {
+          brandInventories[item.brandName] = item.availableInventory;
+       }
+    }
+    
+    for (const brand in brandSums) {
+       if (brandInventories[brand] !== undefined && brandSums[brand] > brandInventories[brand]) {
+          alert(`牌号 ${brand} 的总箱数 (${brandSums[brand]}) 不能超过目前可用库存量 (${brandInventories[brand]})`);
+          return;
+       }
+    }
+
     alert('提交成功！');
     navigate('/plan/monthly');
   };
@@ -294,7 +311,7 @@ export default function AgeingPlanCreate() {
                   <TableHead className="w-8 px-0"></TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">序号</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">单据编号</TableHead>
-                  <TableHead className="text-[12px] whitespace-nowrap">变更表示</TableHead>
+                  <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('牌号', 'brandGrade')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('状态', 'status')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">申请类型</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">产品类型</TableHead>
@@ -302,7 +319,6 @@ export default function AgeingPlanCreate() {
                   <TableHead className="text-[12px] whitespace-nowrap">产品名称</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">产品编号</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">客户名称</TableHead>
-                  <TableHead className="text-[12px] whitespace-nowrap">{renderSortHeader('牌号', 'brandGrade')}</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">规格</TableHead>
                   <TableHead className="text-[12px] whitespace-nowrap">单位</TableHead>
                   <TableHead className="text-[12px] text-right whitespace-nowrap">需求量</TableHead>
@@ -343,7 +359,7 @@ export default function AgeingPlanCreate() {
                       </TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap font-mono">{row.sequenceNumber}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.documentNo}</TableCell>
-                      <TableCell className="text-[12px] px-2 !py-2 whitespace-nowrap">{row.isChanged ? <span className="text-red-500">变更</span> : '-'}</TableCell>
+                      <TableCell className="font-bold text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                       <TableCell className="px-2 !py-2 whitespace-nowrap text-[12px] text-[#409eff]">{row.status}</TableCell>
                       <TableCell className="px-2 !py-2 whitespace-nowrap">
                         <span className={cn(
@@ -358,7 +374,6 @@ export default function AgeingPlanCreate() {
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.productName}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap font-mono text-[11px]">{row.productCode}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap" title={row.customerName}>{row.customerName}</TableCell>
-                      <TableCell className="font-bold text-gray-700 text-[12px] px-2 !py-2 whitespace-nowrap">{row.brandGrade}</TableCell>
                       <TableCell className="text-gray-500 text-[12px] px-2 !py-2 whitespace-nowrap">{row.specification}</TableCell>
                       <TableCell className="text-gray-400 text-[11px] px-2 !py-2 whitespace-nowrap">{row.unit}</TableCell>
                       <TableCell className="font-bold text-gray-600 text-right text-[12px] px-2 !py-2 whitespace-nowrap">{row.totalRequirementAmount}</TableCell>
@@ -417,7 +432,8 @@ export default function AgeingPlanCreate() {
               <TableHeader className="sticky top-0 bg-white/95 backdrop-blur z-10 isolate border-b border-gray-100">
                 <TableRow className="border-none shadow-none hover:bg-transparent">
                   <TableHead className="w-16 text-center text-gray-600 font-bold font-sans border-r border-gray-200">序号</TableHead>
-                  <TableHead className="w-28 min-w-[110px] text-gray-600 font-bold font-sans border-r border-gray-200">总牌号和等级</TableHead>
+                  <TableHead className="w-28 min-w-[110px] text-gray-600 font-bold font-sans border-r border-gray-200">牌号</TableHead>
+                  <TableHead className="w-24 text-right text-gray-600 font-bold font-sans border-r border-gray-200">目前可用库存量</TableHead>
                   <TableHead className="w-20 text-gray-600 font-bold font-sans text-center border-r border-gray-200">年月份</TableHead>
                   <TableHead className="w-32 min-w-[130px] text-gray-600 font-bold font-sans border-r border-gray-200">分牌号和等级</TableHead>
                   <TableHead className="w-24 text-right text-gray-600 font-bold font-sans border-r border-gray-200">箱数</TableHead>
@@ -432,14 +448,22 @@ export default function AgeingPlanCreate() {
                   <TableRow key={item.sequenceNumber} className="hover:bg-gray-50 border-b border-gray-100 group">
                     <TableCell className="text-center text-gray-400 font-mono text-[12px] border-r border-gray-100">{item.sequenceNumber}</TableCell>
                     
-                    {/* 总牌号和等级 - RowSpan logic */}
+                    {/* 牌号 - RowSpan logic */}
                     {item.brandSpan !== undefined && item.brandSpan > 0 && (
-                      <TableCell 
-                        rowSpan={item.brandSpan} 
-                        className="text-center bg-white border-r border-gray-100 font-bold text-gray-700"
-                      >
-                        {item.brandName}
-                      </TableCell>
+                      <>
+                        <TableCell 
+                          rowSpan={item.brandSpan} 
+                          className="text-center bg-white border-r border-gray-100 font-bold text-gray-700"
+                        >
+                          {item.brandName}
+                        </TableCell>
+                        <TableCell 
+                          rowSpan={item.brandSpan} 
+                          className="border-r border-gray-100 text-right bg-blue-50/20 align-top pt-3"
+                        >
+                          <span className={cn("font-bold text-[12px] font-mono", item.brandHasError ? "text-red-500" : "text-blue-600")}>{item.availableInventory || '0.00'}</span>
+                        </TableCell>
+                      </>
                     )}
 
                     <TableCell className="border-r border-gray-100">
@@ -466,7 +490,7 @@ export default function AgeingPlanCreate() {
                         value={item.boxCount || ''} 
                         onChange={(e) => updateItem(item.sequenceNumber, 'boxCount', parseFloat(e.target.value) || 0)} 
                         placeholder="0"
-                        className="h-7 text-[12px] text-right text-blue-600 font-bold font-mono border-transparent hover:border-gray-200 focus:bg-white"
+                        className={cn("h-7 text-[12px] text-right font-bold font-mono border-transparent hover:border-gray-200 focus:bg-white", item.brandHasError ? "text-red-600 bg-red-50" : "text-blue-600")}
                       />
                     </TableCell>
 

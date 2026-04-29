@@ -1,9 +1,9 @@
 import { MonthlyAgingPlan, MonthlyAgingPlanItem } from '../../types/monthly-plan';
 
 /**
- * 模拟月度醇化计划基础信息数据
+ * 模拟月度醇化计划基础信息数据（调整专用）
  */
-export const mockMonthlyAgingPlans: MonthlyAgingPlan[] = [
+export const mockMonthlyAgingAdjustPlans: MonthlyAgingPlan[] = [
   {
     sequenceNumber: 1,
     planName: '2026年4月月度醇化计划',
@@ -21,20 +21,18 @@ export const mockMonthlyAgingPlans: MonthlyAgingPlan[] = [
 ];
 
 /**
- * 模拟月度醇化计划表明细数据 (以2026年6月计划为例)
+ * 模拟月度醇化计划表明细数据（调整专用）
  */
-export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
+export const mockMonthlyAgingAdjustPlanItems: MonthlyAgingPlanItem[] = [
   {
     sequenceNumber: 1,
     brandName: 'GS01',
     month: '6月',
     subBrandGrade: 'GS0101',
     boxCount: 8000,
-    availableInventory: 15000,
-    appliedCompletionAmount: 8000,
     date: '实时生产日期',
     processPlanNumber: '',
-    remarks: '需本月生产'
+    remarks: '需本月生产 (调整)'
   },
   {
     sequenceNumber: 2,
@@ -42,11 +40,9 @@ export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
     month: '6月',
     subBrandGrade: 'GS6001',
     boxCount: 9580,
-    availableInventory: 20000,
-    appliedCompletionAmount: 9580,
     date: '实时生产日期',
     processPlanNumber: '',
-    remarks: '库存补贴标'
+    remarks: '库存补贴标 (调整)'
   },
   {
     sequenceNumber: 3,
@@ -54,10 +50,8 @@ export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
     month: '6月',
     subBrandGrade: 'GS6001',
     boxCount: 63740,
-    availableInventory: 20000,
-    appliedCompletionAmount: 63740,
     date: '实时生产日期',
     processPlanNumber: '',
-    remarks: '需本月生产'
+    remarks: '需本月生产 (调整)'
   }
 ];

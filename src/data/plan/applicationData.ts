@@ -23,11 +23,11 @@ export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
       { id: 'req-001-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 20, unit: '吨' }
     ],
     totalRequirementAmount: 20,
-    unitPriceExclTax: 12000,
-    unitPriceInclTax: 13560,
-    amountExclTax: 240000,
-    applicantName: '张三',
-    applicantDepartment: '计划部',
+
+
+
+
+
     expectedCompletionDate: '2024-05-15',
     deliveryDate: '2024-05-20',
     deliveryLocation: '江苏省南京市江宁区A厂'
@@ -53,11 +53,11 @@ export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
       { id: 'req-002-2', sequenceNumber: 2, versionNo: 'V1.1', requirementAmount: 30, unit: '吨' }
     ],
     totalRequirementAmount: 50,
-    unitPriceExclTax: 8000,
-    unitPriceInclTax: 9040,
-    amountExclTax: 400000,
-    applicantName: '李四',
-    applicantDepartment: '采购部',
+
+
+
+
+
     expectedCompletionDate: '2024-04-30',
     deliveryDate: '2024-05-05',
     deliveryLocation: '浙江省杭州市C集团'
@@ -82,11 +82,11 @@ export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
       { id: 'req-003-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 300, unit: '公斤' }
     ],
     totalRequirementAmount: 300,
-    unitPriceExclTax: 150000,
-    unitPriceInclTax: 169500,
-    amountExclTax: 45000000,
-    applicantName: '王五',
-    applicantDepartment: '销售部',
+
+
+
+
+
     expectedCompletionDate: '2024-06-01',
     deliveryDate: '2024-06-10',
     deliveryLocation: '云南省昆明市B公司仓库'
@@ -111,11 +111,11 @@ export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
       { id: 'req-004-1', sequenceNumber: 1, versionNo: 'V2.0', requirementAmount: 15, unit: '吨' }
     ],
     totalRequirementAmount: 15,
-    unitPriceExclTax: 25000,
-    unitPriceInclTax: 28250,
-    amountExclTax: 375000,
-    applicantName: '赵六',
-    applicantDepartment: '研发部',
+
+
+
+
+
     expectedCompletionDate: '2024-07-20',
     deliveryDate: '2024-07-25',
     deliveryLocation: '四川省成都市D中烟二厂'
@@ -140,11 +140,11 @@ export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
       { id: 'req-005-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 50, unit: '公斤' }
     ],
     totalRequirementAmount: 50,
-    unitPriceExclTax: 80000,
-    unitPriceInclTax: 90400,
-    amountExclTax: 4000000,
-    applicantName: '孙七',
-    applicantDepartment: '计划部',
+
+
+
+
+
     expectedCompletionDate: '2024-03-10',
     deliveryDate: '2024-03-12',
     deliveryLocation: '广东省广州市E总厂区'
@@ -169,11 +169,11 @@ export const mockApplicationLedgerData: PlanPoolApplicationLedger[] = [
       { id: 'req-006-1', sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: 10, unit: '吨' }
     ],
     totalRequirementAmount: 10,
-    unitPriceExclTax: 6000,
-    unitPriceInclTax: 6780,
-    amountExclTax: 60000,
-    applicantName: '周八',
-    applicantDepartment: '生产部',
+
+
+
+
+
     expectedCompletionDate: '2024-08-05',
     deliveryDate: '2024-08-10',
     deliveryLocation: '成品库'

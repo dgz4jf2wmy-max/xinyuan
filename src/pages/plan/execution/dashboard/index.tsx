@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Clock, Target } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
 import { mockDashboardData } from '../../../../data/plan/execution/dashboardData';
-import { mockProductionPoolData } from '../../../../data/plan/productionPoolData';
 
 export default function PlanExecutionDashboard() {
   const [currentTime, setCurrentTime] = useState('');
@@ -20,7 +19,9 @@ export default function PlanExecutionDashboard() {
     return Math.min(100, Math.round((actual / planned) * 100));
   };
 
-  const urgentRequests = mockProductionPoolData.filter(p => p.applicationType === '紧急');
+  const totalPlanned = mockDashboardData.columns.reduce((sum, col) => sum + (col.unit === '吨' ? col.planned : 0), 0);
+  const totalActual = mockDashboardData.columns.reduce((sum, col) => sum + (col.unit === '吨' ? col.actual : 0), 0);
+  const totalRate = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
 
   return (
     <div className="h-full w-full bg-[#f5f7fa] flex flex-col font-sans overflow-hidden">
@@ -47,70 +48,52 @@ export default function PlanExecutionDashboard() {
         </div>
       </div>
 
-      {urgentRequests.length > 0 && (
-        <div className="px-4 pt-4 shrink-0 bg-white">
-          <div className="bg-[#fef0f0] border border-[#fde2e2] rounded flex flex-col shadow-sm">
-            <div className="p-3 border-b border-[#fde2e2] flex items-center justify-between">
-              <div className="flex items-center text-[#f56c6c] text-[13px] font-bold">
-                <AlertTriangle className="w-4 h-4 mr-1.5" />
-                发现 {urgentRequests.length} 项紧急/变更生产需求
+      <div className="px-4 pt-4 shrink-0">
+        <div className="bg-white border border-[#ebeef5] shadow-sm rounded-lg p-5 flex items-center justify-between w-full relative overflow-hidden">
+          <div className="absolute right-0 top-0 bottom-0 opacity-5 pointer-events-none">
+            <Target className="w-48 h-48 -mr-10 -mt-10" />
+          </div>
+          
+          <div className="flex-1 flex items-center gap-10 z-10">
+            <div className="flex flex-col min-w-[280px]">
+              <h3 className="text-[13px] font-bold text-[#909399] flex items-center mb-2 tracking-wider">
+                <Target className="w-4 h-4 mr-1.5" /> 本月度累计计划达成率
+              </h3>
+              <div className="flex items-end gap-3 mb-2">
+                <span className="text-4xl leading-none font-black text-[#409eff] tracking-tighter">
+                  {totalRate}%
+                </span>
               </div>
-              <button className="text-[12px] text-[#f56c6c] hover:text-[#f78989] font-medium flex items-center transition-colors">
-                前往处理 <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </button>
+              <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-[#409eff] rounded-full transition-all duration-1000" style={{ width: `${totalRate}%` }}></div>
+              </div>
             </div>
-            <div className="p-2">
-              <table className="w-full text-left border-collapse text-[12px]">
-                <thead className="bg-[#fff6f6] text-[#909399]">
-                  <tr>
-                    <th className="py-1.5 px-3 font-medium">类型</th>
-                    <th className="py-1.5 px-3 font-medium">申请单号</th>
-                    <th className="py-1.5 px-3 font-medium">产品名称</th>
-                    <th className="py-1.5 px-3 font-medium">产品规格</th>
-                    <th className="py-1.5 px-3 font-medium text-right">需求数量</th>
-                    <th className="py-1.5 px-3 font-medium">交货日期</th>
-                    <th className="py-1.5 px-3 font-medium">客户</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {urgentRequests.map(req => (
-                    <tr key={req.id} className="border-b border-[#fde2e2] border-dashed last:border-0 hover:bg-[#fff9f9]">
-                      <td className="py-1.5 px-3">
-                        <span className={cn(
-                          "px-1.5 py-0.5 rounded text-[11px]",
-                          "bg-red-100 text-red-600"
-                        )}>
-                          {req.applicationType}
-                        </span>
-                      </td>
-                      <td className="py-1.5 px-3 font-mono text-[#606266]">{req.documentNo}</td>
-                      <td className="py-1.5 px-3 font-medium text-[#303133]">
-                        {req.productName}
-                      </td>
-                      <td className="py-1.5 px-3 text-[#606266]">{req.specification}</td>
-                      <td className="py-1.5 px-3 text-right font-mono font-bold text-[#f56c6c]">
-                        {req.totalRequirementAmount}{req.unit}
-                      </td>
-                      <td className="py-1.5 px-3 text-[#606266]">{req.deliveryDate}</td>
-                      <td className="py-1.5 px-3 text-[#606266] truncate max-w-[150px]">{req.customerName}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+            <div className="h-12 w-px bg-[#ebeef5] hidden md:block"></div>
+
+            <div className="flex gap-12">
+              <div className="flex flex-col gap-1">
+                <span className="text-[#909399] text-[12px] font-medium mb-1">累计排产下达量</span>
+                <span className="font-bold text-[#303133] font-mono text-2xl leading-none">{Number(totalPlanned.toFixed(3))} <span className="text-[#909399] font-sans font-normal text-[12px] ml-1">吨</span></span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[#909399] text-[12px] font-medium mb-1">累计实际生产量</span>
+                <span className="font-bold text-[#67c23a] font-mono text-2xl leading-none">{Number(totalActual.toFixed(3))} <span className="text-[#909399] font-sans font-normal text-[12px] ml-1">吨</span></span>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* 核心监控内容区：单屏四列满铺，无外部滚动条 */}
-      <div className="flex-1 flex gap-4 p-4 overflow-hidden bg-white">
+      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
         
         {mockDashboardData.columns.map((column) => {
           const Icon = column.icon;
           const totalPercent = calcPercent(column.actual, column.planned);
 
           return (
-            <div key={column.id} className="w-1/4 bg-white rounded-sm border border-[#ebeef5] flex flex-col overflow-hidden">
+            <div key={column.id} className="w-1/4 bg-white rounded-lg shadow-sm border border-[#ebeef5] flex flex-col overflow-hidden">
               
               {/* 大类数据统计头 */}
               <div className="p-3 border-b border-[#ebeef5] bg-[#fdfdfe] shrink-0">

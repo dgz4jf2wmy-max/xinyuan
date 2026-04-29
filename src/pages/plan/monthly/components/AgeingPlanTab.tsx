@@ -185,7 +185,7 @@ export default function AgeingPlanTab() {
                             variant="ghost" 
                             size="sm" 
                             className="text-[#e6a23c] px-2 hover:bg-orange-50" 
-                            onClick={() => navigate('/plan/monthly/aging/create', { state: { sourceId: row.sequenceNumber } })}
+                            onClick={() => navigate(`/plan/monthly/aging/adjust/${row.sequenceNumber}`)}
                           >
                             调整
                           </Button>

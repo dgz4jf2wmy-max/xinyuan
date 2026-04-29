@@ -34,14 +34,14 @@ const createPoolRecord = (
   requirements: [{ id: `req-${id}`, sequenceNumber: 1, versionNo: 'V1.0', requirementAmount: amount, unit: '吨' }],
   totalRequirementAmount: amount,
   initialRequirementAmount: amount,
-  unitPriceExclTax: amount > 0 ? (productType === '香精香料' ? 50000 : 12000) : 0,
-  unitPriceInclTax: amount > 0 ? (productType === '香精香料' ? 56500 : 13560) : 0,
-  amountExclTax: amount > 0 ? amount * (productType === '香精香料' ? 50000 : 12000) : 0,
+
+
+
   deliveryDate: '2026-06-01',
   deliveryLocation,
   purchaseOrder: `PO-2026-${id.toString().padStart(3, '0')}`,
-  applicantName: id % 2 === 0 ? '张建国' : '李明',
-  applicantDepartment: id % 2 === 0 ? '营销部' : '生产技术部',
+
+
 });
 
 const createExperimentalPoolRecord = (
@@ -78,14 +78,14 @@ const createExperimentalPoolRecord = (
   ],
   totalRequirementAmount: (baseAmount * 0.8) + (baseAmount * 1.0) + (baseAmount * 1.5),
   initialRequirementAmount: baseAmount * 0.8,
-  unitPriceExclTax: 0,
-  unitPriceInclTax: 0,
-  amountExclTax: 0,
+
+
+
   deliveryDate: '2026-06-01',
   deliveryLocation,
   purchaseOrder: `PO-2026-${id.toString().padStart(3, '0')}`,
-  applicantName: id % 2 === 0 ? '测试员A' : '研究员B',
-  applicantDepartment: id % 2 === 0 ? '技术中心' : '中试基地',
+
+
 });
 
 /**

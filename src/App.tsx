@@ -22,7 +22,9 @@ import MonthlyProductionPlanIndex from './pages/plan/monthly';
 import MonthlyProductionPlanCreate from './pages/plan/monthly/create';
 import AgeingPlanCreate from './pages/plan/monthly/aging/create';
 import MonthlyProductionPlanDetailView from './pages/plan/monthly/detail';
+import MonthlyProductionPlanAdjust from './pages/plan/monthly/adjust';
 import AgeingPlanDetail from './pages/plan/monthly/aging/detail';
+import AgeingPlanAdjust from './pages/plan/monthly/aging/adjust';
 import PlanExecutionAnalysis from './pages/plan/execution/analysis';
 import PlanExecutionDashboard from './pages/plan/execution/dashboard';
 
@@ -38,8 +40,10 @@ export default function App() {
           <Route path="plan/annual/adjust/:id" element={<AnnualPlanAdjust />} />
           <Route path="plan/monthly" element={<MonthlyProductionPlanIndex />} />
           <Route path="plan/monthly/create" element={<MonthlyProductionPlanCreate />} />
+          <Route path="plan/monthly/adjust/:id" element={<MonthlyProductionPlanAdjust />} />
           <Route path="plan/monthly/detail/:id" element={<MonthlyProductionPlanDetailView />} />
           <Route path="plan/monthly/aging/create" element={<AgeingPlanCreate />} />
+          <Route path="plan/monthly/aging/adjust/:id" element={<AgeingPlanAdjust />} />
           <Route path="plan/monthly/aging/detail/:id" element={<AgeingPlanDetail />} />
           <Route path="plan/pool" element={<ProductionPoolList />} />
           <Route path="plan/application" element={<PlanPoolApplicationList />} />

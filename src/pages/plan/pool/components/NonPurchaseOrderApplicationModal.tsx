@@ -11,9 +11,10 @@ interface NonPurchaseOrderApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
+  allowedProductionTypes?: string[];
 }
 
-export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: NonPurchaseOrderApplicationModalProps) {
+export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit, allowedProductionTypes }: NonPurchaseOrderApplicationModalProps) {
   const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false);
   
   // Details State
@@ -59,7 +60,11 @@ export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: 
   };
 
   const getProductionTypes = (productType: string) => {
-    return RestrictedProductionTypeByProductCategory[productType] || [];
+    let types = RestrictedProductionTypeByProductCategory[productType] || [];
+    if (allowedProductionTypes && allowedProductionTypes.length > 0) {
+      types = types.filter(t => allowedProductionTypes.some(allowed => t.includes(allowed))) as any;
+    }
+    return types;
   };
 
   const isCustomerDisabled = (productionType: string) => {
