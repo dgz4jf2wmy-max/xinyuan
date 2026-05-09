@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, FileEdit, ChevronDown, ChevronUp, Home, Calendar } from 'lucide-react';
+import { LayoutGrid, FileEdit, ChevronDown, ChevronUp, Home, Calendar, Factory } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export const menuItems = [
@@ -24,6 +24,29 @@ export const menuItems = [
     ]
   },
   {
+    label: '生产业务',
+    icon: Factory,
+    children: [
+      {
+        label: '班组排班',
+        icon: FileEdit,
+        children: [
+          { path: '/production/scheduling/shifts', label: '班组班次', icon: FileEdit },
+          { path: '/production/scheduling/schedule', label: '班组排班表', icon: FileEdit }
+        ]
+      },
+      {
+        label: '生产任务执行',
+        icon: FileEdit,
+        children: [
+          { path: '/production/execution/monthly-task', label: '月度生产任务', icon: FileEdit },
+          { path: '/production/execution/monthly-dashboard', label: '月度生产看板', icon: FileEdit },
+          { path: '/production/execution/temp-blending', label: '临时回掺流程', icon: FileEdit }
+        ]
+      }
+    ]
+  },
+  {
     label: '系统管理',
     icon: LayoutGrid,
     children: [
@@ -37,7 +60,8 @@ export const menuItems = [
     icon: LayoutGrid,
     children: [
       { path: '/customer/ledger', label: '客户台账', icon: FileEdit },
-      { path: '/base/sub-brand', label: '分牌号台账', icon: FileEdit }
+      { path: '/base/sub-brand', label: '分牌号台账', icon: FileEdit },
+      { path: '/base/production-type', label: '生产类型', icon: FileEdit }
     ]
   }
 ];

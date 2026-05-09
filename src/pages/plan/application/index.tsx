@@ -98,7 +98,7 @@ export default function PlanPoolApplicationList() {
       </div>
 
       {/* 视图内容区 */}
-      <div className="flex-1 overflow-auto flex flex-col border border-[#ebeef5] rounded-sm">
+      <div className="flex-1 overflow-auto flex flex-col">
         <Table className="relative w-full">
           <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] whitespace-nowrap text-xs">
             <TableRow>

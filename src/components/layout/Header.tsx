@@ -33,6 +33,7 @@ const getRouteInfo = (pathname: string) => {
     '/plan/annual/create': { parent: '计划管理', label: '年度产销计划编制' },
     '/plan/monthly/create': { parent: '计划管理', label: '新增月度产销计划' },
     '/plan/monthly/aging/create': { parent: '计划管理', label: '新增月度醇化计划' },
+    '/production/scheduling/schedule/create': { parent: '班组排班表', label: '新建排班计划' },
   };
   
   if (extraRouteMap[pathname]) return extraRouteMap[pathname];
@@ -71,6 +72,18 @@ const getRouteInfo = (pathname: string) => {
   
   if (pathname.startsWith('/plan/annual/adjust/')) {
     return { parent: '计划管理', label: '年度产销计划调整' };
+  }
+
+  if (pathname.startsWith('/production/scheduling/schedule/detail/')) {
+    return { parent: '班组排班表', label: '班组排班详情' };
+  }
+  
+  if (pathname.startsWith('/production/scheduling/schedule/edit/')) {
+    return { parent: '班组排班表', label: '班组排班调整' };
+  }
+
+  if (pathname.startsWith('/production/execution/monthly-task/builder')) {
+    return { parent: '月度生产任务', label: '月度生产任务编制' };
   }
 
   return { label: '未知页面' };

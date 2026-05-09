@@ -25,6 +25,7 @@ export const mockMonthlyAgingPlans: MonthlyAgingPlan[] = [
  */
 export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
   {
+    id: 'item-1',
     sequenceNumber: 1,
     brandName: 'GS01',
     month: '6月',
@@ -33,10 +34,11 @@ export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
     availableInventory: 15000,
     appliedCompletionAmount: 8000,
     date: '实时生产日期',
-    processPlanNumber: '',
+    sectionPlanNumber: '',
     remarks: '需本月生产'
   },
   {
+    id: 'item-2',
     sequenceNumber: 2,
     brandName: 'GS60',
     month: '6月',
@@ -45,10 +47,11 @@ export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
     availableInventory: 20000,
     appliedCompletionAmount: 9580,
     date: '实时生产日期',
-    processPlanNumber: '',
+    sectionPlanNumber: '',
     remarks: '库存补贴标'
   },
   {
+    id: 'item-3',
     sequenceNumber: 3,
     brandName: 'GS60',
     month: '6月',
@@ -57,7 +60,7 @@ export const mockMonthlyAgingPlanItems: MonthlyAgingPlanItem[] = [
     availableInventory: 20000,
     appliedCompletionAmount: 63740,
     date: '实时生产日期',
-    processPlanNumber: '',
+    sectionPlanNumber: '',
     remarks: '需本月生产'
   }
 ];

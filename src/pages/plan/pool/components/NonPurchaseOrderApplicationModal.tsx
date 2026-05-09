@@ -234,7 +234,7 @@ export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit, al
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                type="date"
-                               value={d.expectedCompletionDate}
+                               value={d.expectedCompletionDate ?? ''}
                                onChange={(e) => handleDetailChange(d.id, 'expectedCompletionDate', e.target.value)}
                                className="w-[120px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
                              />
@@ -242,7 +242,7 @@ export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit, al
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                type="date"
-                               value={d.deliveryDate}
+                               value={d.deliveryDate ?? ''}
                                onChange={(e) => handleDetailChange(d.id, 'deliveryDate', e.target.value)}
                                className="w-[120px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
                              />
@@ -250,7 +250,7 @@ export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit, al
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                type="text"
-                               value={d.deliveryLocation}
+                               value={d.deliveryLocation ?? ''}
                                onChange={(e) => handleDetailChange(d.id, 'deliveryLocation', e.target.value)}
                                className="w-[160px] border border-gray-300 rounded px-2 py-1 text-[13px] outline-none focus:border-blue-500 bg-white"
                                placeholder="到货地点(选填)"

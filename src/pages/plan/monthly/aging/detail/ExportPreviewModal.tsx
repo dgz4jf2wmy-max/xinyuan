@@ -141,7 +141,7 @@ export function ExportPreviewModal({
               </td>
               <td className="border border-black p-2">{row.date}</td>
               <td className="border border-black p-2">
-                {row.processPlanNumber || "/"}
+                {row.sectionPlanNumber || "/"}
               </td>
               <td className="border border-black p-2">{row.remarks}</td>
             </tr>

@@ -293,7 +293,7 @@ export default function AgeingPlanDetail() {
                     {row.date}
                   </TableCell>
                   <TableCell className="text-center text-[#909399] border-r border-[#ebeef5]">
-                    {row.processPlanNumber || "/"}
+                    {row.sectionPlanNumber || "/"}
                   </TableCell>
                   <TableCell className="text-center text-[#606266]">
                     {row.remarks}

@@ -27,6 +27,7 @@ export default function MonthlyProductionPlanDetailView() {
   // Versions
   const [selectedVersion, setSelectedVersion] = useState(versions[0]);
   const [isComparing, setIsComparing] = useState(false);
+  const [showOnlyChanges, setShowOnlyChanges] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isInventoryDialogOpen, setIsInventoryDialogOpen] = useState(false);
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
@@ -127,12 +128,28 @@ export default function MonthlyProductionPlanDetailView() {
     return currentTables.reduce((sum, row) => sum + (row.productionVolume || 0), 0);
   }, [currentTables]);
 
-  const getInitialValueForTable = (brandGrade: string, productType: string) => {
-    return initialData.planList.find(t => t.brandGrade === brandGrade && t.productType === productType)?.productionVolume || 0;
+  // Helper for merging production types
+  const isSameProductionTypeForMerge = (t1: string | undefined, t2: string | undefined) => {
+    if (t1 === t2) return true;
+    const mergedTypes = ['配方生产（成品）', '配方生产（自制半成品）'];
+    if (t1 && t2 && mergedTypes.includes(t1) && mergedTypes.includes(t2)) return true;
+    return false;
+  };
+
+  const getInitialValueForTable = (brandGrade: string, productType: string, productionType: string | undefined) => {
+    return initialData.planList.find(t => 
+      t.brandGrade === brandGrade && 
+      t.productType === productType &&
+      isSameProductionTypeForMerge(t.productionType, productionType)
+    )?.productionVolume || 0;
   };
 
   const getDetailsForTable = (table: MonthlyProductionPlanTable) => {
-    return currentData.details?.filter(d => d.brandGrade === table.brandGrade && d.productType === table.productType) || [];
+    return currentData.details?.filter(d => 
+      d.brandGrade === table.brandGrade && 
+      d.productType === table.productType &&
+      isSameProductionTypeForMerge(d.productionType, table.productionType)
+    ) || [];
   };
 
   const toggleTableExpand = (rowId: string) => {
@@ -160,7 +177,7 @@ export default function MonthlyProductionPlanDetailView() {
             </div>
           </div>
           {!isInitialVersion && (
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
               {currentData.status === MonthlyPlanStatus.PendingImprovement && (
                 <Button 
                   variant="outline"
@@ -177,6 +194,17 @@ export default function MonthlyProductionPlanDetailView() {
               >
                 原料库存对比
               </Button>
+              {isComparing && (
+                <label className="flex items-center gap-1.5 cursor-pointer ml-1">
+                  <input 
+                    type="checkbox" 
+                    checked={showOnlyChanges} 
+                    onChange={(e) => setShowOnlyChanges(e.target.checked)} 
+                    className="w-3.5 h-3.5 text-[#409eff] border-[#dcdfe6] rounded focus:ring-0 cursor-pointer" 
+                  />
+                  <span className="text-[13px] text-[#606266]">只看变动项</span>
+                </label>
+              )}
               <Button 
                 variant={isComparing ? "default" : "outline"}
                 className={cn(
@@ -225,132 +253,144 @@ export default function MonthlyProductionPlanDetailView() {
         {/* Master-Detail Table */}
         <div className="p-4 space-y-3">
           {isComparing && (
-            <div className="bg-white border border-orange-100 rounded-sm px-4 py-2 flex items-center gap-2">
-              <span className="text-sm text-orange-800">
-                当前正在进行 <span className="font-bold text-black font-sans">与初始版本 (V1.0)</span> 的数据对比。
-                <span className="ml-2 text-orange-700/70 text-xs">黄色标签为初始版本的数据。</span>
-              </span>
+            <div className="bg-[#fdf6ec] border border-[#f5dab1] px-4 py-3 rounded-sm flex items-center">
+              <span className="text-[13px] font-medium text-[#e6a23c]">当前正在进行 与初始版本 (V1.0) 的数据对比。 黄色标签为初始版本的数据。</span>
             </div>
           )}
-          <div className="bg-white border border-gray-200 rounded-sm">
-            <div className="px-4 py-2.5 bg-[#f8f9fb] border-b border-gray-200 flex justify-between items-center">
-              <span className="font-bold text-[13px] text-gray-700">月度产销计划表 ({activeCategory === 'raw_material' ? '再造原料' : '香精香料'})</span>
+          <div className="bg-white rounded-sm">
+            <div className="px-4 py-3 bg-[#fafafa] border-b border-[#e4e7ed] flex justify-between items-center">
+              <span className="font-medium text-[14px] text-[#303133]">月度产销计划表 ({activeCategory === 'raw_material' ? '再造原料' : '香精香料'})</span>
             </div>
             
             <div className="bg-white [&>div]:overflow-visible">
               <Table>
-                <TableHeader className="bg-[#f5f7fa] sticky top-[0px] z-20 shadow-[0_1px_0_#ebeef5]">
-                  <TableRow>
-                    <TableHead className="w-10 p-0 text-center bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]"></TableHead>
-                    <TableHead className="w-16 text-center text-[12px] font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">序号</TableHead>
-                    <TableHead className="text-[12px] w-32 font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">产品类别</TableHead>
-                    <TableHead className="text-[12px] min-w-[200px] font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">牌号</TableHead>
-                    <TableHead className="text-right text-[12px] w-32 font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">总产量/吨</TableHead>
-                    <TableHead className="text-[12px] font-bold text-gray-600 bg-[#f5f7fa] shadow-[0_1px_0_#ebeef5]">备注</TableHead>
+                <TableHeader className="bg-[#fafafa] sticky top-0 z-20">
+                  <TableRow className="hover:bg-transparent border-b border-[#e4e7ed]">
+                    <TableHead className="w-10 p-0 text-center h-11"></TableHead>
+                    <TableHead className="w-16 text-center text-[13px] font-medium text-[#909399] h-11">序号</TableHead>
+                    <TableHead className="text-[13px] w-32 font-medium text-[#909399] h-11">产品类别</TableHead>
+                    <TableHead className="text-[13px] w-32 font-medium text-[#909399] h-11">生产类型</TableHead>
+                    <TableHead className="text-[13px] min-w-[200px] font-medium text-[#909399] h-11">牌号</TableHead>
+                    <TableHead className="text-right text-[13px] w-32 font-medium text-[#909399] h-11">总产量/吨</TableHead>
+                    <TableHead className="text-[13px] font-medium text-[#909399] h-11">备注</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                   {currentTables.length > 0 ? (
+                   {currentTables.filter(row => {
+                     if (isComparing && showOnlyChanges) {
+                       const initialValue = getInitialValueForTable(row.brandGrade, row.productType, row.productionType);
+                       return initialValue !== row.productionVolume;
+                     }
+                     return true;
+                   }).length > 0 ? (
                      <>
-                       {currentTables.map((row, idx) => {
+                       {currentTables.filter(row => {
+                         if (isComparing && showOnlyChanges) {
+                           const initialValue = getInitialValueForTable(row.brandGrade, row.productType, row.productionType);
+                           return initialValue !== row.productionVolume;
+                         }
+                         return true;
+                       }).map((row, idx) => {
                          const isExpanded = expandedTableIds.has(row.id);
                          const details = getDetailsForTable(row);
-                         const initialValue = getInitialValueForTable(row.brandGrade, row.productType);
+                         const initialValue = getInitialValueForTable(row.brandGrade, row.productType, row.productionType);
                          const hasChanged = isComparing && initialValue !== row.productionVolume;
                          
                          return (
                            <React.Fragment key={row.id}>
                             <TableRow 
                               className={cn(
-                                "hover:bg-gray-50 border-b-gray-50 group cursor-pointer",
-                                isComparing && "bg-white"
+                                "hover:bg-[#f5f7fa] border-b-[#f4f4f5] group cursor-pointer transition-colors",
+                                isComparing && "bg-white",
+                                isExpanded && "bg-[#fafafa]"
                               )} 
                               onClick={() => toggleTableExpand(row.id)}
                             >
                               <TableCell className="w-8 p-0 text-center">
-                                {isExpanded ? <ChevronDown className="w-4 h-4 text-blue-500 m-auto" /> : <ChevronRight className="w-4 h-4 text-gray-400 m-auto" />}
+                                {isExpanded ? <ChevronDown className="w-4 h-4 text-[#409eff] m-auto" /> : <ChevronRight className="w-4 h-4 text-[#c0c4cc] m-auto" />}
                               </TableCell>
-                              <TableCell className="text-center font-medium text-gray-500 text-[12px]">{idx + 1}</TableCell>
-                              <TableCell className="text-gray-700 text-[12px]">{row.productType}</TableCell>
-                              <TableCell>
+                              <TableCell className="text-center font-medium text-[#909399] text-[13px] py-3">{idx + 1}</TableCell>
+                              <TableCell className="text-[#606266] text-[13px] py-3">{row.productType}</TableCell>
+                              <TableCell className="text-[#606266] text-[13px] py-3">{row.productionType}</TableCell>
+                              <TableCell className="py-3">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-bold text-[12px] text-gray-800">{row.brandGrade}</span>
+                                  <span className="font-semibold text-[13px] text-[#303133]">{row.brandGrade}</span>
                                   {details.length > 1 && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded border whitespace-nowrap bg-orange-50 text-orange-600 border-orange-200 font-medium">
+                                    <span className="text-[11px] px-1.5 py-0.5 rounded bg-[#fdf6ec] text-[#e6a23c] font-medium border border-[#faecd8]">
                                       合并 {details.length} 项需求
                                     </span>
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="text-right text-[12px] py-3">
+                              <TableCell className="text-right text-[13px] py-3">
                                 <div className="flex flex-col items-end">
-                                  <span className={cn("font-bold text-[13px]", hasChanged ? "text-[#409eff]" : "text-gray-900")}>
+                                  <span className={cn("font-bold text-[14px]", hasChanged ? "text-[#409eff]" : "text-[#303133]")}>
                                     {row.productionVolume.toFixed(2)}
                                   </span>
                                   {isComparing && (
-                                    <div className="mt-1 bg-[#fffbe6] border border-[#ffe58f] rounded-[2px] px-2 py-0.5 min-w-[70px] text-center">
-                                      <div className="text-[10px] text-[#e6a23c] font-medium tabular-nums">
-                                        <span className="scale-90 inline-block mr-0.5">初始:</span>{initialValue.toFixed(2)}
+                                    <div className="mt-1 bg-[#fffbe6] border border-[#ffe58f] rounded px-1.5 py-px text-center">
+                                      <div className="text-[11px] text-[#e6a23c] tabular-nums">
+                                        <span className="opacity-80 inline-block mr-1">初始:</span>{initialValue.toFixed(2)}
                                       </div>
                                     </div>
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="text-[12px] text-gray-500">
+                              <TableCell className="text-[13px] text-[#909399] py-3">
                                 {row.remarks || '--'}
                               </TableCell>
                             </TableRow>
                             {isExpanded && (
-                              <TableRow className="bg-[#fcfdfe] hover:bg-[#fcfdfe] border-b-0 shadow-inner">
-                                <TableCell colSpan={6} className="p-0">
-                                  <div className="w-0 min-w-[100%]">
-                                    <div className="px-10 py-3 border-l-2 border-blue-400 ml-4 mb-2">
-                                      <div className="flex justify-between items-center mb-2">
-                                        <span className="text-[12px] font-bold text-gray-600">编排明细溯源 (共 {details.length} 条需求来源)</span>
+                              <TableRow className="bg-[#fafafa] hover:bg-[#fafafa] border-b-[#f4f4f5]">
+                                <TableCell colSpan={7} className="p-0">
+                                  <div className="w-0 min-w-[100%] pb-4">
+                                    <div className="px-6 py-4 bg-white mx-8 my-2 rounded flex flex-col gap-3 shadow-sm border border-[#ebeef5]">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-[13px] font-medium text-[#606266] flex items-center before:content-[''] before:block before:w-1 before:h-3.5 before:bg-[#409eff] before:rounded-[1px] before:mr-2">编排明细溯源 (共 {details.length} 条需求来源)</span>
                                       </div>
-                                      <div className="border border-gray-200 rounded-sm overflow-hidden bg-white">
-                                        <Table className="relative w-full">
-                                          <TableHeader className="bg-[#f5f7fa]">
-                                          <TableRow>
-                                            <TableHead className="w-12 text-center text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">排号</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">产品类型</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">生产类型</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">产品名称</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">产品编号</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">客户名称</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">牌号</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">规格</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap text-right">需求量</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">单位</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">期望完成时间</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">到货时间</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">到货地点</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">申请人</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">申请人部门</TableHead>
-                                            <TableHead className="text-[10px] text-gray-500 py-1.5 h-auto whitespace-nowrap">分牌号</TableHead>
+                                      <div className="overflow-x-auto relative rounded">
+                                        <Table className="relative w-full border-none">
+                                          <TableHeader className="bg-[#fafafa]">
+                                          <TableRow className="border-b border-[#ebeef5] hover:bg-transparent">
+                                            <TableHead className="w-12 text-center text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">序号</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">产品类型</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">生产类型</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">产品名称</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">产品编号</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">客户名称</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">牌号</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">规格</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap text-right border-none">需求量</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">单位</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">期望完成时间</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">到货时间</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">到货地点</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">申请人</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">申请人部门</TableHead>
+                                            <TableHead className="text-[12px] text-[#909399] font-medium py-2.5 h-auto whitespace-nowrap border-none">分牌号</TableHead>
                                           </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                           {details.map((d, dIdx) => (
-                                            <TableRow key={d.id} className="hover:bg-blue-50/50">
-                                              <TableCell className="text-center font-medium text-gray-400 text-[10px] py-1 whitespace-nowrap">{dIdx + 1}</TableCell>
-                                              <TableCell className="font-medium text-gray-700 text-[10px] py-1 whitespace-nowrap">{d.productType || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.productionType || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.productName || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.productCode || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.customerName || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.brandGrade || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.specification || '-'}</TableCell>
-                                              <TableCell className="font-bold text-gray-600 text-right text-[10px] py-1 whitespace-nowrap">
+                                            <TableRow key={d.id} className="hover:bg-[#f5f7fa] border-b border-[#f4f4f5] last:border-b-0 transition-colors">
+                                              <TableCell className="text-center font-medium text-[#909399] text-[12px] py-2.5 whitespace-nowrap">{dIdx + 1}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.productType || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.productionType || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.productName || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.productCode || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.customerName || '-'}</TableCell>
+                                              <TableCell className="text-[#303133] font-medium text-[12px] py-2.5 whitespace-nowrap">{d.brandGrade || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.specification || '-'}</TableCell>
+                                              <TableCell className="font-semibold text-[#303133] text-right text-[12px] py-2.5 whitespace-nowrap">
                                                 {d.requirementAmount}
                                               </TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.unit || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.expectedCompletionDate || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.deliveryDate || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap max-w-[150px] truncate">{d.deliveryLocation || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.applicantName || '-'}</TableCell>
-                                              <TableCell className="text-gray-500 text-[10px] py-1 whitespace-nowrap">{d.applicantDepartment || '-'}</TableCell>
-                                              <TableCell className="font-medium text-blue-600 text-[10px] py-1 whitespace-nowrap">{d.subBrandGrade || '-'}</TableCell>
+                                              <TableCell className="text-[#909399] text-[12px] py-2.5 whitespace-nowrap">{d.unit || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.expectedCompletionDate || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.deliveryDate || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap max-w-[150px] truncate" title={d.deliveryLocation}>{d.deliveryLocation || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.applicantName || '-'}</TableCell>
+                                              <TableCell className="text-[#606266] text-[12px] py-2.5 whitespace-nowrap">{d.applicantDepartment || '-'}</TableCell>
+                                              <TableCell className="font-medium text-[#409eff] text-[12px] py-2.5 whitespace-nowrap">{d.subBrandGrade || '-'}</TableCell>
                                             </TableRow>
                                           ))}
                                         </TableBody>
@@ -365,17 +405,17 @@ export default function MonthlyProductionPlanDetailView() {
                          );
                        })}
                        {/* 合计行 */}
-                       <TableRow className="bg-[#f8f9fb] font-bold border-t-2 border-gray-200">
-                         <TableCell colSpan={4} className="text-center text-[12px] text-gray-700 py-3">合计</TableCell>
-                         <TableCell className="text-right text-[13px] text-blue-700 py-3">
+                       <TableRow className="bg-[#fafafa] font-semibold border-t-2 border-[#e4e7ed]">
+                         <TableCell colSpan={5} className="text-center text-[13px] text-[#606266] py-3.5">合计</TableCell>
+                         <TableCell className="text-right text-[14px] text-[#409eff] py-3.5 pr-4">
                            {totalProductionVolume.toFixed(3).replace(/\.?0+$/, '')}
                          </TableCell>
-                         <TableCell className="py-3"></TableCell>
+                         <TableCell className="py-3.5"></TableCell>
                        </TableRow>
                      </>
                    ) : (
                      <TableRow>
-                       <TableCell colSpan={6} className="text-center py-10 text-gray-400 text-[13px]">
+                       <TableCell colSpan={7} className="text-center py-10 text-gray-400 text-[13px]">
                          暂无{activeCategory === 'raw_material' ? '再造原料' : '香精香料'}计划表数据
                        </TableCell>
                      </TableRow>

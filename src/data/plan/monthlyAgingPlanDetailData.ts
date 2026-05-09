@@ -72,32 +72,32 @@ export const mockMonthlyAgingApprovalProcess: ApprovalProcessInfo[] = [
 
 // Mock Data for Initial Version (V1.0)
 export const mockMonthlyAgingInitialVersion: MonthlyAgingPlanItem[] = [
-  { sequenceNumber: 1, brandName: 'GS60', month: '2月', subBrandGrade: 'GS6001', boxCount: 479, date: '2月18日', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 2, brandName: 'GS60', month: '/', subBrandGrade: 'GS6001', boxCount: 3187, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 3, brandName: 'GS01', month: '/', subBrandGrade: 'GS0101', boxCount: 400, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 4, brandName: 'GS01', month: '/', subBrandGrade: 'GS0102', boxCount: 21, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 5, brandName: 'GS01', month: '2月', subBrandGrade: 'GS0102', boxCount: 979, date: '2月19日', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 6, brandName: 'GS30', month: '1月', subBrandGrade: 'GS3001', boxCount: 134, date: '2月20日', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 7, brandName: 'GS30', month: '1月', subBrandGrade: 'GS3003', boxCount: 84, date: '2月20日', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 8, brandName: 'GS30', month: '/', subBrandGrade: 'GS3003', boxCount: 1817, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 9, brandName: 'GS22', month: '/', subBrandGrade: 'GS2201', boxCount: 62, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 10, brandName: 'GS22', month: '/', subBrandGrade: 'GS2202', boxCount: 400, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-1', sequenceNumber: 1, brandName: 'GS60', month: '2月', subBrandGrade: 'GS6001', boxCount: 479, date: '2月18日', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-2', sequenceNumber: 2, brandName: 'GS60', month: '/', subBrandGrade: 'GS6001', boxCount: 3187, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-3', sequenceNumber: 3, brandName: 'GS01', month: '/', subBrandGrade: 'GS0101', boxCount: 400, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-4', sequenceNumber: 4, brandName: 'GS01', month: '/', subBrandGrade: 'GS0102', boxCount: 21, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-5', sequenceNumber: 5, brandName: 'GS01', month: '2月', subBrandGrade: 'GS0102', boxCount: 979, date: '2月19日', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-6', sequenceNumber: 6, brandName: 'GS30', month: '1月', subBrandGrade: 'GS3001', boxCount: 134, date: '2月20日', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-7', sequenceNumber: 7, brandName: 'GS30', month: '1月', subBrandGrade: 'GS3003', boxCount: 84, date: '2月20日', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-8', sequenceNumber: 8, brandName: 'GS30', month: '/', subBrandGrade: 'GS3003', boxCount: 1817, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-9', sequenceNumber: 9, brandName: 'GS22', month: '/', subBrandGrade: 'GS2201', boxCount: 62, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-10', sequenceNumber: 10, brandName: 'GS22', month: '/', subBrandGrade: 'GS2202', boxCount: 400, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
 ];
 
 // Mock Data for Current Version (V2.0)
 export const mockMonthlyAgingCurrentVersion: MonthlyAgingPlanItem[] = [
-  { sequenceNumber: 1, brandName: 'GS60', month: '12月', subBrandGrade: 'GS6001', boxCount: 1000, date: '1月实时生产日期', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 2, brandName: 'GS60', month: '12月', subBrandGrade: 'GS6002', boxCount: 1037, date: '1月实时生产日期', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 3, brandName: 'GS60', month: '/', subBrandGrade: 'GS6001', boxCount: 3000, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 4, brandName: 'GS01', month: '12月', subBrandGrade: 'GS0101', boxCount: 600, date: '1月实时生产日期', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 5, brandName: 'GS01', month: '12月', subBrandGrade: 'GS0102', boxCount: 1030, date: '1月实时生产日期', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 6, brandName: 'GS01', month: '/', subBrandGrade: 'GS0101', boxCount: 2000, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 7, brandName: 'GS30', month: '/', subBrandGrade: 'GS3001', boxCount: 140, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 8, brandName: 'GS30', month: '/', subBrandGrade: 'GS3003', boxCount: 2000, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 9, brandName: 'GS22', month: '/', subBrandGrade: 'GS2201', boxCount: 623, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 10, brandName: 'GS22', month: '/', subBrandGrade: 'GS2202', boxCount: 536, date: '实时生产日期', processPlanNumber: '', remarks: '需本月生产' },
-  { sequenceNumber: 11, brandName: 'GS22', month: '12月', subBrandGrade: 'GS2202', boxCount: 142, date: '1月实时生产日期', processPlanNumber: '', remarks: '库存补贴标' },
-  { sequenceNumber: 12, brandName: 'JSZ11', month: '12月', subBrandGrade: 'JSZ1101', boxCount: 22, date: '1月实时生产日期', processPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-11', sequenceNumber: 1, brandName: 'GS60', month: '12月', subBrandGrade: 'GS6001', boxCount: 1000, date: '1月实时生产日期', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-12', sequenceNumber: 2, brandName: 'GS60', month: '12月', subBrandGrade: 'GS6002', boxCount: 1037, date: '1月实时生产日期', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-13', sequenceNumber: 3, brandName: 'GS60', month: '/', subBrandGrade: 'GS6001', boxCount: 3000, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-14', sequenceNumber: 4, brandName: 'GS01', month: '12月', subBrandGrade: 'GS0101', boxCount: 600, date: '1月实时生产日期', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-15', sequenceNumber: 5, brandName: 'GS01', month: '12月', subBrandGrade: 'GS0102', boxCount: 1030, date: '1月实时生产日期', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-16', sequenceNumber: 6, brandName: 'GS01', month: '/', subBrandGrade: 'GS0101', boxCount: 2000, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-17', sequenceNumber: 7, brandName: 'GS30', month: '/', subBrandGrade: 'GS3001', boxCount: 140, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-18', sequenceNumber: 8, brandName: 'GS30', month: '/', subBrandGrade: 'GS3003', boxCount: 2000, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-19', sequenceNumber: 9, brandName: 'GS22', month: '/', subBrandGrade: 'GS2201', boxCount: 623, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-20', sequenceNumber: 10, brandName: 'GS22', month: '/', subBrandGrade: 'GS2202', boxCount: 536, date: '实时生产日期', sectionPlanNumber: '', remarks: '需本月生产' },
+  { id: 'item-21', sequenceNumber: 11, brandName: 'GS22', month: '12月', subBrandGrade: 'GS2202', boxCount: 142, date: '1月实时生产日期', sectionPlanNumber: '', remarks: '库存补贴标' },
+  { id: 'item-22', sequenceNumber: 12, brandName: 'JSZ11', month: '12月', subBrandGrade: 'JSZ1101', boxCount: 22, date: '1月实时生产日期', sectionPlanNumber: '', remarks: '库存补贴标' },
 ];
 
 export const getMonthlyAgingVersionDetails = (versionId: string): MonthlyAgingPlanItem[] => {

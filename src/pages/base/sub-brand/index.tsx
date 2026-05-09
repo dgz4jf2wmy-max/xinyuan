@@ -127,7 +127,7 @@ export default function SubBrandLedger() {
       </div>
 
       {/* 表格区 */}
-      <div className="flex-1 overflow-auto flex flex-col border border-[#ebeef5] rounded-sm">
+      <div className="flex-1 overflow-auto flex flex-col">
         <Table className="relative w-full">
           <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa]">
             <TableRow>
@@ -203,7 +203,7 @@ export default function SubBrandLedger() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">关联牌号</label>
             <Input 
-              value={editingItem?.brand}
+              value={editingItem?.brand ?? ''}
               disabled
               className="bg-gray-50"
             />
@@ -211,7 +211,7 @@ export default function SubBrandLedger() {
            <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">关联客户</label>
             <Input 
-              value={editingItem?.customerName}
+              value={editingItem?.customerName ?? ''}
               disabled
               className="bg-gray-50"
             />

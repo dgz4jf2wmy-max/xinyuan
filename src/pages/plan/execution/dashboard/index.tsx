@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Clock, Target } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
-import { mockDashboardData } from '../../../../data/plan/execution/dashboardData';
+import { getDerivedDashboardData } from '../../../../data/plan/execution/dashboardData';
 
 export default function PlanExecutionDashboard() {
+  const mockDashboardData = getDerivedDashboardData();
   const [currentTime, setCurrentTime] = useState('');
   
   useEffect(() => {
@@ -14,14 +15,14 @@ export default function PlanExecutionDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const calcPercent = (actual: number, planned: number) => {
-    if (planned === 0) return 0;
+  const calcPercent = (actual: number, planned?: number) => {
+    if (!planned || planned === 0) return 0;
     return Math.min(100, Math.round((actual / planned) * 100));
   };
 
-  const totalPlanned = mockDashboardData.columns.reduce((sum, col) => sum + (col.unit === '吨' ? col.planned : 0), 0);
+  const totalRequirement = mockDashboardData.columns.reduce((sum, col) => sum + (col.unit === '吨' ? col.requirement : 0), 0);
   const totalActual = mockDashboardData.columns.reduce((sum, col) => sum + (col.unit === '吨' ? col.actual : 0), 0);
-  const totalRate = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
+  const totalRate = totalRequirement > 0 ? Math.round((totalActual / totalRequirement) * 100) : 0;
 
   return (
     <div className="h-full w-full bg-[#f5f7fa] flex flex-col font-sans overflow-hidden">
@@ -74,7 +75,7 @@ export default function PlanExecutionDashboard() {
             <div className="flex gap-12">
               <div className="flex flex-col gap-1">
                 <span className="text-[#909399] text-[12px] font-medium mb-1">累计排产下达量</span>
-                <span className="font-bold text-[#303133] font-mono text-2xl leading-none">{Number(totalPlanned.toFixed(3))} <span className="text-[#909399] font-sans font-normal text-[12px] ml-1">吨</span></span>
+                <span className="font-bold text-[#303133] font-mono text-2xl leading-none">{Number(totalRequirement.toFixed(3))} <span className="text-[#909399] font-sans font-normal text-[12px] ml-1">吨</span></span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[#909399] text-[12px] font-medium mb-1">累计实际生产量</span>
@@ -90,7 +91,7 @@ export default function PlanExecutionDashboard() {
         
         {mockDashboardData.columns.map((column) => {
           const Icon = column.icon;
-          const totalPercent = calcPercent(column.actual, column.planned);
+          const totalPercent = calcPercent(column.actual, column.requirement);
 
           return (
             <div key={column.id} className="w-1/4 bg-white rounded-lg shadow-sm border border-[#ebeef5] flex flex-col overflow-hidden">
@@ -121,33 +122,66 @@ export default function PlanExecutionDashboard() {
                 </div>
                 <div className="flex justify-between text-[11px] text-[#909399] mt-1.5 font-mono">
                   <span>完工: <span className="text-[#303133] font-semibold">{column.actual}</span></span>
-                  <span>目标: <span className="text-[#303133] font-semibold">{column.planned}</span> {column.unit}</span>
+                  <span>需求: <span className="text-[#303133] font-semibold">{column.requirement}</span> {column.unit}</span>
                 </div>
               </div>
 
               {/* 牌号平铺区：内部自适应挤压，无滚动条 */}
               <div className="flex-1 p-3 flex flex-col gap-3 min-h-0 overflow-y-auto">
                 {column.brands.map(brand => {
-                  const brandPercent = calcPercent(brand.actual, brand.planned);
+                  const brandPercent = calcPercent(brand.actual, brand.requirement);
                   
                   return (
                     <div key={brand.id} className="border border-[#ebeef5] rounded-sm flex flex-col bg-[#fafafa]">
                       
                       {/* 主牌号层 */}
-                      <div className="px-3 py-2 border-b border-[#ebeef5] bg-[#f5f7fa] flex justify-between items-center">
-                        <div className="font-bold text-[#303133] text-[13px] flex items-center">
-                          {brandPercent === 100 && <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-[#67c23a]" />}
-                          {brand.brand}
-                        </div>
-                        <div className="flex items-center gap-2 w-1/2">
-                          <div className="flex-1 h-1.5 bg-[#dcdfe6] rounded-full overflow-hidden">
-                            <div 
-                              className={cn("h-full rounded-full", brandPercent === 100 ? "bg-[#67c23a]" : column.color)} 
-                              style={{ width: `${brandPercent}%` }} 
-                            />
+                      <div className="px-3 py-2 border-b border-[#ebeef5] bg-[#f5f7fa] flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <div className="font-bold text-[#303133] text-[13px] flex items-center flex-wrap gap-1.5">
+                            {brandPercent >= 100 && <CheckCircle2 className="w-3.5 h-3.5 text-[#67c23a]" />}
+                            <span>{brand.brand}</span>
+                            <span className={cn(
+                              "px-1 py-0.5 rounded text-[10px] font-normal leading-none",
+                              brand.status === '已执行' ? "bg-[#f0f9eb] text-[#67c23a] border border-[#e1f3d8]" :
+                              brand.status === '在执行' ? "bg-[#ecf5ff] text-[#409eff] border border-[#d9ecff]" :
+                              "bg-[#fdf6ec] text-[#e6a23c] border border-[#faecd8]"
+                            )}>
+                              {brand.status}
+                            </span>
                           </div>
-                          <div className="text-[11px] font-mono text-[#606266] w-16 text-right">
-                            {brandPercent}%
+                          <div className="text-[11px] text-[#909399]">
+                            需求量: <span className="font-mono text-[#303133] font-bold">{brand.requirement}</span> <span className="font-sans font-normal text-[10px]">{column.unit}</span>
+                          </div>
+                        </div>
+
+                        {/* 对比进度条 */}
+                        <div className="flex flex-col gap-1.5">
+                          {/* 理论进度 */}
+                          <div className="flex items-center gap-2">
+                            <div className="text-[10px] text-[#909399] w-6 shrink-0 text-right">理论</div>
+                            <div className="flex-1 h-1.5 bg-[#ebeef5] rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,0.1)_4px,rgba(0,0,0,0.1)_8px)] bg-[#c0c4cc] opacity-80 rounded-full" 
+                                style={{ width: `${Math.min(100, brand.requirement ? (brand.planned / brand.requirement) * 100 : 0)}%` }} 
+                              />
+                            </div>
+                            <div className="text-[10px] font-mono text-[#909399] w-14 text-right">
+                              {brand.planned} <span className="font-sans font-normal text-[9px]">{column.unit}</span>
+                            </div>
+                          </div>
+                          
+                          {/* 实际进度 */}
+                          <div className="flex items-center gap-2">
+                            <div className="text-[10px] text-[#909399] w-6 shrink-0 text-right">实际</div>
+                            <div className="flex-1 h-1.5 bg-[#ebeef5] rounded-full overflow-hidden">
+                              <div 
+                                className={cn("h-full rounded-full transition-all duration-500", brand.actual >= brand.planned && brand.planned > 0 ? "bg-[#67c23a]" : column.color)} 
+                                style={{ width: `${Math.min(100, brand.requirement ? (brand.actual / brand.requirement) * 100 : 0)}%` }} 
+                              />
+                            </div>
+                            <div className="text-[10px] font-mono text-[#303133] w-14 text-right font-bold">
+                              {brand.actual} <span className="font-sans font-normal text-[9px]">{column.unit}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -155,7 +189,7 @@ export default function PlanExecutionDashboard() {
                       {/* 分牌号层：高密度列表 */}
                       <div className="p-2 flex flex-col gap-1.5 bg-white">
                         {brand.subs.map(sub => {
-                          const subPercent = calcPercent(sub.actual, sub.planned);
+                          const subPercent = calcPercent(sub.actual, sub.requirement);
                           return (
                             <div key={sub.id} className="flex items-center justify-between text-[11px]">
                               <div className="flex items-center gap-1.5 w-[110px] shrink-0">
@@ -165,15 +199,22 @@ export default function PlanExecutionDashboard() {
                               <div className="flex-1 text-[#909399] truncate px-1 text-[10px] scale-90 origin-left" title={sub.customer}>
                                 {sub.customer}
                               </div>
-                              <div className="flex items-center gap-2 w-[70px] shrink-0">
-                                <div className="flex-1 h-1 bg-[#ebeef5] rounded-full overflow-hidden">
-                                  <div 
-                                    className={cn("h-full rounded-full", subPercent === 100 ? "bg-[#67c23a]" : column.color)} 
-                                    style={{ width: `${subPercent}%` }} 
-                                  />
+                              {sub.requirement !== undefined && (
+                                <div className="flex items-center gap-2 w-[70px] shrink-0">
+                                  <div className="flex-1 h-1 bg-[#ebeef5] rounded-full overflow-hidden">
+                                    <div 
+                                      className={cn("h-full rounded-full", subPercent === 100 ? "bg-[#67c23a]" : column.color)} 
+                                      style={{ width: `${subPercent}%` }} 
+                                    />
+                                  </div>
+                                  <span className="font-mono text-[#303133] w-7 text-right font-bold">{subPercent}%</span>
                                 </div>
-                                <span className="font-mono text-[#303133] w-7 text-right font-bold">{subPercent}%</span>
-                              </div>
+                              )}
+                              {sub.requirement === undefined && (
+                                <div className="flex items-center gap-2 w-[70px] shrink-0 justify-end">
+                                  <span className="font-mono text-[#303133] text-right font-bold">{sub.actual} 吨</span>
+                                </div>
+                              )}
                             </div>
                           );
                         })}

@@ -61,7 +61,7 @@ export default function MonthlyProductionPlanCreate() {
   useEffect(() => {
     // Load pending plans
     getPoolPage({ status: '待计划', pageNum: 1, pageSize: 100 }).then(res => {
-      setPendingPool(res.list.filter(p => p.status === '待计划'));
+      setPendingPool(res.list.filter(p => p.status === '待计划' && !p.productionType?.includes('醇化')));
     });
   }, []);
 
@@ -99,9 +99,21 @@ export default function MonthlyProductionPlanCreate() {
     categoryTypesMap[activeCategory].includes(t.productType as ProductType)
   );
 
+  // Helper for merging production types
+  const isSameProductionTypeForMerge = (t1: string | undefined, t2: string | undefined) => {
+    if (t1 === t2) return true;
+    const mergedTypes = ['配方生产（成品）', '配方生产（自制半成品）'];
+    if (t1 && t2 && mergedTypes.includes(t1) && mergedTypes.includes(t2)) return true;
+    return false;
+  };
+
   // Helper to get details for a specific table row
   const getDetailsForTable = (table: MonthlyProductionPlanTable) => {
-    return draftDetails.filter(d => d.brandGrade === table.brandGrade && d.productType === table.productType);
+    return draftDetails.filter(d => 
+      d.brandGrade === table.brandGrade && 
+      d.productType === table.productType &&
+      isSameProductionTypeForMerge(d.productionType, table.productionType)
+    );
   };
 
   const toggleTableExpand = (id: string) => {
@@ -167,7 +179,10 @@ export default function MonthlyProductionPlanCreate() {
 
         validItems.forEach(item => {
            // Calculate subBrandGrade logic: brand + incrementing number for each unique customer under that brand
-           const brandDetails = [...draftDetails, ...newDetails].filter(d => d.brandGrade === item.brandGrade);
+           const brandDetails = [...draftDetails, ...newDetails].filter(d => 
+             d.brandGrade === item.brandGrade && 
+             isSameProductionTypeForMerge(d.productionType, item.productionType)
+           );
            const customerEntry = brandDetails.find(d => d.customerName === item.customerName);
            
            let subSuffix = '01';
@@ -209,7 +224,11 @@ export default function MonthlyProductionPlanCreate() {
         // Update Draft Tables (Aggregation)
         let updatedDraftTables = [...draftTables];
         newDetails.forEach(detail => {
-           const existingTable = updatedDraftTables.find(t => t.productType === detail.productType && t.brandGrade === detail.brandGrade);
+           const existingTable = updatedDraftTables.find(t => 
+             t.productType === detail.productType && 
+             t.brandGrade === detail.brandGrade &&
+             isSameProductionTypeForMerge(t.productionType, detail.productionType)
+           );
            if (existingTable) {
              existingTable.productionVolume += detail.requirementAmount;
            } else {
@@ -217,6 +236,7 @@ export default function MonthlyProductionPlanCreate() {
                id: `table-${Date.now()}-${updatedDraftTables.length}`,
                sequenceNumber: updatedDraftTables.length + 1,
                productType: detail.productType,
+               productionType: detail.productionType,
                brandGrade: detail.brandGrade,
                productionVolume: detail.requirementAmount,
                remarks: ''
@@ -239,7 +259,7 @@ export default function MonthlyProductionPlanCreate() {
     if (!tableToRemove) return;
     
     // Return items to pool
-    const detailsToReturn = draftDetails.filter(d => d.brandGrade === tableToRemove.brandGrade && d.productType === tableToRemove.productType);
+    const detailsToReturn = getDetailsForTable(tableToRemove);
     const poolItemsToReturn = detailsToReturn.map(d => ({
        id: d.applicationLedgerId || d.id,
        sequenceNumber: pendingPool.length + 1,
@@ -634,6 +654,7 @@ export default function MonthlyProductionPlanCreate() {
                     <TableHead className="w-8"></TableHead>
                     <TableHead className="w-10 text-center text-[12px]">序号</TableHead>
                     <TableHead className="text-[12px]">再造类型</TableHead>
+                    <TableHead className="text-[12px]">生产类型</TableHead>
                     <TableHead className="text-[12px]">牌号</TableHead>
                     <TableHead className="text-right text-[12px]">总产量/吨</TableHead>
                     <TableHead className="text-[12px]">备注</TableHead>
@@ -653,6 +674,7 @@ export default function MonthlyProductionPlanCreate() {
                           </TableCell>
                           <TableCell className="text-center font-medium text-gray-400 text-[12px]">{idx + 1}</TableCell>
                           <TableCell className="text-gray-700 text-[12px]">{row.productType}</TableCell>
+                          <TableCell className="text-gray-700 text-[12px]">{row.productionType}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-[12px] text-gray-800">{row.brandGrade}</span>
@@ -683,7 +705,7 @@ export default function MonthlyProductionPlanCreate() {
                         </TableRow>
                         {isExpanded && (
                           <TableRow className="bg-[#fcfdfe] hover:bg-[#fcfdfe] border-b-0 shadow-inner">
-                            <TableCell colSpan={7} className="p-0">
+                            <TableCell colSpan={8} className="p-0">
                               <div className="w-0 min-w-full">
                                 <div className="px-6 py-3 border-l-2 border-blue-400 ml-4 mb-2">
                                   <div className="flex justify-between items-center mb-2">
@@ -758,7 +780,7 @@ export default function MonthlyProductionPlanCreate() {
                    })}
                    {!isDragging && currentDraftTables.length === 0 && (
                     <TableRow>
-                       <TableCell colSpan={6} className="text-center py-20 border-none">
+                       <TableCell colSpan={8} className="text-center py-20 border-none">
                           <div className="flex flex-col items-center justify-center text-gray-300">
                             <GripVertical className="w-10 h-10 mb-2 opacity-20" />
                             <p className="text-[13px]">将左侧需求项拖拽至此处排产</p>

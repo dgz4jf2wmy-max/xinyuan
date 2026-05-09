@@ -48,6 +48,9 @@ export interface MonthlyProductionPlanTable {
   /** 产品类型: 字符(50), 只读 */
   productType: string;
   
+  /** 生产类型: 字符(20), 只读 关联：《生产类型》中的所有生产类型 约束：导出字段时不可见 */
+  productionType?: string;
+  
   /** 牌号: 字符(50), 只读 */
   brandGrade: string;
   
@@ -280,24 +283,29 @@ export interface MonthlyAgingPlan {
  * 8. 月度醇化计划表 (明细项)
  */
 export interface MonthlyAgingPlanItem {
+  id: string; // 唯一标识
   /** 序号: 数字(0.), 只读 */
   sequenceNumber: number;
-  /** 牌号: 字符(20), 必填 */
+  /** 牌号: 字符(20), 只读 */
   brandName: string;
-  /** 目前可用库存量: 数字(0.), 只读. 约束：详情查看与编制时不可见 */
+  /** 
+   * 目前可用库存量: 数字(0.), 只读 
+   * 约束：查看详情时不可见 
+   * 规则：对应牌号在自制半成品库内非冻结状态的库存总数
+   */
   availableInventory?: number;
-  /** 年月份: 时间（mm）, 必填 */
+  /** 年月份: 时间（mm）, 只读 规则：自动获取当前月份 */
   month: string;
-  /** 分牌号和等级: 字符(50), 必填 */
+  /** 分牌号和等级: 字符(50), 只读 */
   subBrandGrade: string;
-  /** 箱数: 数字(0.), 必填 */
+  /** 箱数: 数字(.00), 只读 约束：需要对相同牌号的箱数求和，总和不得超过目前可用库存量 */
   boxCount: number;
-  /** 申请完工量: 数字(0.), 只读. 约束：详情查看与编制时不可见 */
+  /** 申请完工量: 数字(0.), 只读 约束：详情查看与编制时不可见 规则：需要转换单位为箱 */
   appliedCompletionAmount?: number;
   /** 日期: 字符(50), 必填 */
   date: string;
   /** 码段计划号: 字符(50), 选填 */
-  processPlanNumber?: string;
+  sectionPlanNumber?: string;
   /** 备注: 字符(100), 选填 */
   remarks?: string;
 }

@@ -155,7 +155,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>订单类型</label>
                 <select 
-                  value={orderType} 
+                  value={orderType ?? ''} 
                   onChange={(e) => setOrderType(e.target.value)} 
                   className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500"
                 >
@@ -167,7 +167,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                 <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>订单日期</label>
                 <input 
                   type="date" 
-                  value={orderDate} 
+                  value={orderDate ?? ''} 
                   onChange={(e) => setOrderDate(e.target.value)} 
                   className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500" 
                 />
@@ -175,7 +175,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>客户</label>
                 <select 
-                  value={customer} 
+                  value={customer ?? ''} 
                   onChange={(e) => setCustomer(e.target.value)} 
                   className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500"
                 >
@@ -208,7 +208,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                 <label className="block text-xs font-medium text-gray-600 mb-1">备注</label>
                 <input 
                   type="text" 
-                  value={remarks}
+                  value={remarks ?? ''}
                   onChange={(e) => setRemarks(e.target.value)}
                   placeholder="请输入备注说明（选填）"
                   maxLength={500}
@@ -293,7 +293,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                 type="date" 
-                                value={d.plannedShippingDate} 
+                                value={d.plannedShippingDate ?? ''} 
                                 onChange={(e) => handleDetailChange(d.id, 'plannedShippingDate', e.target.value)}
                                 className="w-[120px] border border-gray-300 rounded px-2 py-1 text-sm focus:border-blue-500 outline-none" 
                              />
@@ -301,7 +301,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                 type="date" 
-                                value={d.deliveryDate} 
+                                value={d.deliveryDate ?? ''} 
                                 onChange={(e) => handleDetailChange(d.id, 'deliveryDate', e.target.value)}
                                 className="w-[120px] border border-gray-300 rounded px-2 py-1 text-sm focus:border-blue-500 outline-none" 
                              />
@@ -309,7 +309,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                 type="date" 
-                                value={d.expectedCompletionDate} 
+                                value={d.expectedCompletionDate ?? ''} 
                                 onChange={(e) => handleDetailChange(d.id, 'expectedCompletionDate', e.target.value)}
                                 className="w-[120px] border border-gray-300 rounded px-2 py-1 text-sm focus:border-blue-500 outline-none" 
                              />
@@ -317,7 +317,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                           <td className="py-2 px-2 border-r border-gray-200">
                              <input 
                                 type="text" 
-                                value={d.deliveryLocation} 
+                                value={d.deliveryLocation ?? ''} 
                                 onChange={(e) => handleDetailChange(d.id, 'deliveryLocation', e.target.value)}
                                 className="w-[140px] border border-gray-300 rounded px-2 py-1 text-sm focus:border-blue-500 outline-none" 
                              />

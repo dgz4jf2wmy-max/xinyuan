@@ -1,17 +1,57 @@
 import { Leaf, Factory, Beaker, Box, LucideIcon } from 'lucide-react';
 import { MonthlyPlanStatus } from '../../../types/monthly-plan';
+import { MonthlyProductionSalesDashboard } from '../../../types/monthly-production-sales-dashboard';
+
+export const mockDashboardEntities: MonthlyProductionSalesDashboard[] = [
+  // 再造烟叶
+  { serialNumber: 1, status: '在执行', productType: '再造烟叶', brand: 'HBZY-10', brandRequirement: 200.0, brandTheoreticalProgress: 140.0, brandActualProgress: 130.0, subBrand: 'HBZY1001 (湖北中烟)', subBrandRequirement: 120.0, subBrandActualProgress: 80.0 },
+  { serialNumber: 2, status: '在执行', productType: '再造烟叶', brand: 'HBZY-10', brandRequirement: 200.0, brandTheoreticalProgress: 140.0, brandActualProgress: 130.0, subBrand: 'HBZY1002 (河南中烟)', subBrandRequirement: 80.0, subBrandActualProgress: 50.0 },
+  { serialNumber: 3, status: '待执行', productType: '再造烟叶', brand: 'JSN08', brandRequirement: 200.0, brandTheoreticalProgress: 0.0, brandActualProgress: 0.0, subBrand: 'JSN0801 (广西中烟)', subBrandRequirement: 150.0, subBrandActualProgress: 0.0 },
+  { serialNumber: 4, status: '待执行', productType: '再造烟叶', brand: 'JSN08', brandRequirement: 200.0, brandTheoreticalProgress: 0.0, brandActualProgress: 0.0, subBrand: 'JSN0802 (黑龙江烟草)', subBrandRequirement: 50.0, subBrandActualProgress: 0.0 },
+
+  // 再造梗丝
+  { serialNumber: 5, status: '在执行', productType: '再造梗丝', brand: 'GS22', brandRequirement: 35.0, brandTheoreticalProgress: 25.0, brandActualProgress: 15.0,  subBrand: 'GS2201 (徐州卷烟厂)', subBrandRequirement: 35.0, subBrandActualProgress: 15.0 },
+  { serialNumber: 6, status: '待执行', productType: '再造梗丝', brand: 'GS30', brandRequirement: 45.0, brandTheoreticalProgress: 0.0, brandActualProgress: 0.0,  subBrand: 'GS3001 (淮阴卷烟厂)', subBrandRequirement: 45.0, subBrandActualProgress: 0.0 },
+
+  // 香精香料
+  { serialNumber: 7, status: '在执行', productType: '香精香料', brand: 'NX0160L20', brandRequirement: 12.112, brandTheoreticalProgress: 10.0, brandActualProgress: 8.5, subBrand: 'NX0160L2001 (赣州卷烟厂)', subBrandRequirement: 3.760, subBrandActualProgress: 3.760 },
+  { serialNumber: 8, status: '在执行', productType: '香精香料', brand: 'NX0160L20', brandRequirement: 12.112, brandTheoreticalProgress: 10.0, brandActualProgress: 8.5, subBrand: 'NX0160L2002 (哈尔滨厂)', subBrandRequirement: 5.352, subBrandActualProgress: 4.0 },
+  { serialNumber: 9, status: '在执行', productType: '香精香料', brand: 'NX0160L20', brandRequirement: 12.112, brandTheoreticalProgress: 10.0, brandActualProgress: 8.5, subBrand: 'NX0160L2003 (柳州卷烟厂)', subBrandRequirement: 1.050, subBrandActualProgress: 0.740 },
+  { serialNumber: 10, status: '在执行', productType: '香精香料', brand: 'NX0160L20', brandRequirement: 12.112, brandTheoreticalProgress: 10.0, brandActualProgress: 8.5, subBrand: 'NX0160L2004 (延安卷烟厂)', subBrandRequirement: 1.950, subBrandActualProgress: 0.0 },
+
+  { serialNumber: 11, status: '已执行', productType: '香精香料', brand: 'NX0160X20', brandRequirement: 4.702, brandTheoreticalProgress: 4.702, brandActualProgress: 4.702, subBrand: 'NX0160X2001 (赣州卷烟厂)', subBrandRequirement: 1.430, subBrandActualProgress: 1.430 },
+  { serialNumber: 12, status: '已执行', productType: '香精香料', brand: 'NX0160X20', brandRequirement: 4.702, brandTheoreticalProgress: 4.702, brandActualProgress: 4.702, subBrand: 'NX0160X2002 (哈尔滨厂)', subBrandRequirement: 2.082, subBrandActualProgress: 2.082 },
+  { serialNumber: 13, status: '已执行', productType: '香精香料', brand: 'NX0160X20', brandRequirement: 4.702, brandTheoreticalProgress: 4.702, brandActualProgress: 4.702, subBrand: 'NX0160X2003 (柳州卷烟厂)', subBrandRequirement: 0.440, subBrandActualProgress: 0.440 },
+  { serialNumber: 14, status: '已执行', productType: '香精香料', brand: 'NX0160X20', brandRequirement: 4.702, brandTheoreticalProgress: 4.702, brandActualProgress: 4.702, subBrand: 'NX0160X2004 (延安卷烟厂)', subBrandRequirement: 0.750, subBrandActualProgress: 0.750 },
+
+  // 月度醇化
+  { serialNumber: 15, status: '在执行', productType: '月度醇化', brand: 'GS60', brandRequirement: 4037, brandTheoreticalProgress: 2500, brandActualProgress: 2100, subBrand: 'GS6001 (徐州卷烟厂)', subBrandRequirement: 3000, subBrandActualProgress: 1500 },
+  { serialNumber: 16, status: '在执行', productType: '月度醇化', brand: 'GS60', brandRequirement: 4037, brandTheoreticalProgress: 2500, brandActualProgress: 2100, subBrand: 'GS6002 (徐州卷烟厂)', subBrandRequirement: 1037, subBrandActualProgress: 600 },
+  { serialNumber: 17, status: '待执行', productType: '月度醇化', brand: 'GS01', brandRequirement: 2600, brandTheoreticalProgress: 0.0, brandActualProgress: 0.0, subBrand: 'GS0101 (南京卷烟厂)', subBrandRequirement: 2000, subBrandActualProgress: 0.0 },
+  { serialNumber: 18, status: '待执行', productType: '月度醇化', brand: 'GS01', brandRequirement: 2600, brandTheoreticalProgress: 0.0, brandActualProgress: 0.0, subBrand: 'GS0102 (南京卷烟厂)', subBrandRequirement: 600, subBrandActualProgress: 0.0 },
+];
+
+export const mockDashboardInfo = {
+  planId: "monthly-2026-04",
+  planName: "鑫源公司2026年4月份产销与醇化计划",
+  status: '在执行',
+  updateTime: "2026-04-25 14:32:05",
+};
 
 export interface DashboardSubBrand {
   id: string;
   subBrand: string;
   customer: string;
-  planned: number;
+  requirement?: number;
+  planned?: number;
   actual: number;
 }
 
 export interface DashboardBrand {
   id: string;
   brand: string;
+  status: string;
+  requirement: number;
   planned: number;
   actual: number;
   subs: DashboardSubBrand[];
@@ -20,6 +60,7 @@ export interface DashboardBrand {
 export interface DashboardColumn {
   id: string;
   title: string;
+  requirement: number;
   planned: number;
   actual: number;
   unit: string;
@@ -37,90 +78,58 @@ export interface DashboardData {
   columns: DashboardColumn[];
 }
 
-export const mockDashboardData: DashboardData = {
-  planId: "monthly-2026-04",
-  planName: "鑫源公司2026年4月份产销与醇化计划",
-  status: MonthlyPlanStatus.Published,
-  updateTime: "2026-04-25 14:32:05",
-  columns: [
-    {
-      id: 'yy', title: '再造烟叶', planned: 400.0, actual: 355.0, unit: '吨', icon: Leaf, color: 'bg-[#67c23a]', textColor: 'text-[#67c23a]',
-      brands: [
-        {
-          id: 'yy1', brand: 'HBZY-10', planned: 200.0, actual: 160.0,
-          subs: [
-            { id: 'yy1-1', subBrand: 'HBZY1001', customer: '湖北中烟', planned: 120.0, actual: 100.0 },
-            { id: 'yy1-2', subBrand: 'HBZY1002', customer: '河南中烟', planned: 80.0, actual: 60.0 },
-          ]
-        },
-        {
-          id: 'yy2', brand: 'JSN08', planned: 200.0, actual: 195.0,
-          subs: [
-            { id: 'yy2-1', subBrand: 'JSN0801', customer: '广西中烟', planned: 150.0, actual: 150.0 },
-            { id: 'yy2-2', subBrand: 'JSN0802', customer: '黑龙江烟草', planned: 50.0, actual: 45.0 },
-          ]
-        }
-      ]
-    },
-    {
-      id: 'gs', title: '再造梗丝', planned: 80.0, actual: 19.7, unit: '吨', icon: Factory, color: 'bg-[#e6a23c]', textColor: 'text-[#e6a23c]',
-      brands: [
-        {
-          id: 'gs1', brand: 'GS22', planned: 35.0, actual: 15.0,
-          subs: [
-            { id: 'gs1-1', subBrand: 'GS2201', customer: '徐州卷烟厂', planned: 35.0, actual: 15.0 },
-          ]
-        },
-        {
-          id: 'gs2', brand: 'GS30', planned: 45.0, actual: 4.7,
-          subs: [
-            { id: 'gs2-1', subBrand: 'GS3001', customer: '淮阴卷烟厂', planned: 45.0, actual: 4.7 },
-          ]
-        }
-      ]
-    },
-    {
-      id: 'xj', title: '香精香料', planned: 16.814, actual: 8.5, unit: '吨', icon: Beaker, color: 'bg-[#409eff]', textColor: 'text-[#409eff]',
-      brands: [
-        {
-          id: 'xj1', brand: 'NX0160L20', planned: 12.112, actual: 8.5,
-          subs: [
-            { id: 'xj1-1', subBrand: 'NX0160L2001', customer: '赣州卷烟厂', planned: 3.760, actual: 3.760 },
-            { id: 'xj1-2', subBrand: 'NX0160L2002', customer: '哈尔滨厂', planned: 5.352, actual: 4.000 },
-            { id: 'xj1-3', subBrand: 'NX0160L2003', customer: '柳州卷烟厂', planned: 1.050, actual: 0.740 },
-            { id: 'xj1-4', subBrand: 'NX0160L2004', customer: '延安卷烟厂', planned: 1.950, actual: 0.000 },
-          ]
-        },
-        {
-          id: 'xj2', brand: 'NX0160X20', planned: 4.702, actual: 0.0,
-          subs: [
-            { id: 'xj2-1', subBrand: 'NX0160X2001', customer: '赣州卷烟厂', planned: 1.430, actual: 0.0 },
-            { id: 'xj2-2', subBrand: 'NX0160X2002', customer: '哈尔滨厂', planned: 2.082, actual: 0.0 },
-            { id: 'xj2-3', subBrand: 'NX0160X2003', customer: '柳州卷烟厂', planned: 0.440, actual: 0.0 },
-            { id: 'xj2-4', subBrand: 'NX0160X2004', customer: '延安卷烟厂', planned: 0.750, actual: 0.0 },
-          ]
-        }
-      ]
-    },
-    {
-      id: 'ch', title: '月度醇化', planned: 6637, actual: 4700, unit: '箱', icon: Box, color: 'bg-[#909399]', textColor: 'text-[#909399]',
-      brands: [
-        {
-          id: 'ch1', brand: 'GS60', planned: 4037, actual: 2100,
-          subs: [
-            { id: 'ch1-1', subBrand: 'GS6001', customer: '徐州卷烟厂', planned: 3000, actual: 1500 },
-            { id: 'ch1-2', subBrand: 'GS6002', customer: '徐州卷烟厂', planned: 1037, actual: 600 },
-          ]
-        },
-        {
-          id: 'ch2', brand: 'GS01', planned: 2600, actual: 2600,
-          subs: [
-            { id: 'ch2-1', subBrand: 'GS0101', customer: '南京卷烟厂', planned: 2000, actual: 2000 },
-            { id: 'ch2-2', subBrand: 'GS0102', customer: '南京卷烟厂', planned: 600, actual: 600 },
-          ]
-        }
-      ]
+// Convert entity list back to grouped mockDashboardData to avoid rewriting the whole dashboard UI from scratch
+export function getDerivedDashboardData(): DashboardData {
+  const columnsMap: Record<string, DashboardColumn> = {
+    '再造烟叶': { id: 'yy', title: '再造烟叶', requirement: 0, planned: 0, actual: 0, unit: '吨', icon: Leaf, color: 'bg-[#67c23a]', textColor: 'text-[#67c23a]', brands: [] },
+    '再造梗丝': { id: 'gs', title: '再造梗丝', requirement: 0, planned: 0, actual: 0, unit: '吨', icon: Factory, color: 'bg-[#e6a23c]', textColor: 'text-[#e6a23c]', brands: [] },
+    '香精香料': { id: 'xj', title: '香精香料', requirement: 0, planned: 0, actual: 0, unit: '吨', icon: Beaker, color: 'bg-[#409eff]', textColor: 'text-[#409eff]', brands: [] },
+    '月度醇化': { id: 'ch', title: '月度醇化', requirement: 0, planned: 0, actual: 0, unit: '箱', icon: Box, color: 'bg-[#909399]', textColor: 'text-[#909399]', brands: [] },
+  };
+
+  mockDashboardEntities.forEach((entity) => {
+    let col = columnsMap[entity.productType];
+    if (!col) return;
+
+    let brand = col.brands.find(b => b.brand === entity.brand);
+    if (!brand) {
+      brand = {
+        id: entity.brand,
+        brand: entity.brand,
+        status: entity.status,
+        requirement: entity.brandRequirement,
+        planned: entity.brandTheoreticalProgress,
+        actual: entity.brandActualProgress,
+        subs: []
+      };
+      col.brands.push(brand);
+      col.requirement += brand.requirement;
+      col.planned += brand.planned;
+      col.actual += brand.actual;
     }
-  ]
-};
+
+    // Extract customer from subBrand text if possible, e.g. "XX (YY)"
+    let subBrandName = entity.subBrand;
+    let customerName = '';
+    const match = entity.subBrand.match(/^(.*)\s*\((.*)\)$/);
+    if (match) {
+      subBrandName = match[1].trim();
+      customerName = match[2].trim();
+    }
+
+    brand.subs.push({
+      id: entity.serialNumber.toString(),
+      subBrand: subBrandName,
+      customer: customerName,
+      requirement: entity.subBrandRequirement,
+      actual: entity.subBrandActualProgress
+    });
+  });
+
+  return {
+    ...mockDashboardInfo,
+    columns: Object.values(columnsMap)
+  };
+}
+
 

@@ -162,6 +162,7 @@ export default function AgeingPlanAdjust() {
       formDatas.forEach(item => {
          const boxAmount = Math.ceil((item.totalRequirementAmount || 0) / 0.05);
          newPlanItems.push({
+            id: `item-${Date.now()}-${Math.random().toString(36).substring(2,9)}`,
             sequenceNumber: 0, // will be re-sequenced below
             brandName: item.brandGrade || '', 
             month: item.deliveryDate ? `${parseInt(item.deliveryDate.split('-')[1], 10)}月` : '/',
@@ -169,7 +170,7 @@ export default function AgeingPlanAdjust() {
             boxCount: boxAmount,
             appliedCompletionAmount: boxAmount,
             date: '实时生产日期',
-            processPlanNumber: '',
+            sectionPlanNumber: '',
             remarks: '由非采购订单新增'
          });
       });
@@ -193,6 +194,7 @@ export default function AgeingPlanAdjust() {
       selectedPoolItems.forEach(item => {
          const boxAmount = Math.ceil((item.totalRequirementAmount || 0) / 0.05);
          newPlanItems.push({
+            id: `item-${Date.now()}-${Math.random().toString(36).substring(2,9)}`,
             sequenceNumber: 0,
             brandName: item.brandGrade || '', 
             month: item.deliveryDate ? `${parseInt(item.deliveryDate.split('-')[1], 10)}月` : '/',
@@ -200,7 +202,7 @@ export default function AgeingPlanAdjust() {
             boxCount: boxAmount,
             appliedCompletionAmount: boxAmount,
             date: '实时生产日期',
-            processPlanNumber: '',
+            sectionPlanNumber: '',
             remarks: '由计划池导入'
          });
       });
@@ -298,27 +300,16 @@ export default function AgeingPlanAdjust() {
                       </>
                     )}
 
-                    <TableCell className="border-r border-gray-100">
-                      <Input 
-                        value={item.month} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'month', e.target.value)} 
-                        placeholder="/"
-                        className="h-7 text-[12px] font-sans text-center border-transparent hover:border-gray-200 focus:bg-white"
-                      />
+                    <TableCell className="border-r border-gray-100 text-center text-gray-700 text-[12px]">
+                      {item.month}
                     </TableCell>
 
                     <TableCell className="border-r border-gray-100">
-                      <span className="text-[12px] font-sans px-2 flex items-center h-7">{item.subBrandGrade}</span>
+                      <span className="text-[12px] font-sans px-2 flex items-center h-7 text-gray-700">{item.subBrandGrade}</span>
                     </TableCell>
 
-                    <TableCell className="border-r border-gray-100">
-                      <Input 
-                        type="number"
-                        value={item.boxCount || ''} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'boxCount', parseFloat(e.target.value) || 0)} 
-                        placeholder="0"
-                        className={cn("h-7 text-[12px] text-right font-bold font-mono border-transparent hover:border-gray-200 focus:bg-white", item.brandHasError ? "text-red-600 bg-red-50" : "text-gray-700")}
-                      />
+                    <TableCell className={cn("border-r border-gray-100 text-right text-[12px] font-bold font-mono px-3", item.brandHasError ? "text-red-600 bg-red-50" : "text-gray-700")}>
+                      {item.boxCount || 0}
                     </TableCell>
 
                     <TableCell className="border-r border-gray-100 text-right bg-white">
@@ -328,7 +319,7 @@ export default function AgeingPlanAdjust() {
                     <TableCell className="border-r border-gray-100">
                       <Input 
                         type="text"
-                        value={item.date} 
+                        value={item.date ?? ''} 
                         onChange={(e) => updateItem(item.sequenceNumber, 'date', e.target.value)} 
                         placeholder="实时生产日期"
                         className="h-7 text-[12px] font-sans border-transparent hover:border-gray-200 focus:bg-white"
@@ -337,8 +328,8 @@ export default function AgeingPlanAdjust() {
 
                     <TableCell className="border-r border-gray-100">
                       <Input 
-                        value={item.processPlanNumber || ''} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'processPlanNumber', e.target.value)} 
+                        value={item.sectionPlanNumber ?? ''} 
+                        onChange={(e) => updateItem(item.sequenceNumber, 'sectionPlanNumber', e.target.value)} 
                         placeholder=""
                         className="h-7 text-[12px] font-mono border-transparent hover:border-gray-200 focus:bg-white"
                       />
@@ -346,7 +337,7 @@ export default function AgeingPlanAdjust() {
 
                     <TableCell className="border-r border-gray-100">
                       <Input 
-                        value={item.remarks || ''} 
+                        value={item.remarks ?? ''} 
                         onChange={(e) => updateItem(item.sequenceNumber, 'remarks', e.target.value)} 
                         placeholder="备注"
                         className="h-7 text-[12px] font-sans border-transparent hover:border-gray-200 focus:bg-white"

@@ -4,7 +4,7 @@ export const mockExperimentalProgressData: ExperimentalInformationImprovementPro
   {
     sequenceNumber: 1,
     productType: '香精香料',
-    productionType: '香精香料自主试验',
+    productionType: '自主试验',
     productName: '花香型香精',
     productCode: 'FL-001',
     customerName: '鑫源一分厂',
@@ -25,7 +25,7 @@ export const mockExperimentalProgressData: ExperimentalInformationImprovementPro
   {
     sequenceNumber: 2,
     productType: '再造烟叶',
-    productionType: '再造烟叶翻箱',
+    productionType: '翻箱',
     productName: '特级醇化烟叶',
     productCode: 'PRD-TY-088',
     customerName: '鑫源二分厂',
@@ -46,7 +46,7 @@ export const mockExperimentalProgressData: ExperimentalInformationImprovementPro
   {
     sequenceNumber: 3,
     productType: '香精香料',
-    productionType: '香精香料省公司试验',
+    productionType: '省公司试验',
     productName: '混合型香液',
     productCode: 'FL-002',
     customerName: '省局研究院',
@@ -67,7 +67,7 @@ export const mockExperimentalProgressData: ExperimentalInformationImprovementPro
   {
     sequenceNumber: 4,
     productType: '再造梗丝',
-    productionType: '再造梗丝预混',
+    productionType: '预混',
     productName: '预混梗丝',
     productCode: 'GS-010',
     customerName: '鑫源总厂',

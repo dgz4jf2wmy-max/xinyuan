@@ -17,6 +17,7 @@ import ProductionPoolList from './pages/plan/pool';
 import PlanPoolApplicationList from './pages/plan/application';
 import CustomerLedger from './pages/customer/index';
 import SubBrandLedger from './pages/base/sub-brand/index';
+import ProductionTypeManagement from './pages/base/production-type/index';
 
 import MonthlyProductionPlanIndex from './pages/plan/monthly';
 import MonthlyProductionPlanCreate from './pages/plan/monthly/create';
@@ -27,6 +28,17 @@ import AgeingPlanDetail from './pages/plan/monthly/aging/detail';
 import AgeingPlanAdjust from './pages/plan/monthly/aging/adjust';
 import PlanExecutionAnalysis from './pages/plan/execution/analysis';
 import PlanExecutionDashboard from './pages/plan/execution/dashboard';
+
+import TeamShiftsPage from './pages/production/scheduling/shifts';
+import TeamSchedulePage from './pages/production/scheduling/schedule';
+import SchedulePlanCreate from './pages/production/scheduling/schedule/create';
+import SchedulePlanDetail from './pages/production/scheduling/schedule/detail';
+import SchedulePlanEdit from './pages/production/scheduling/schedule/edit';
+
+import MonthlyProductionTaskPage from './pages/production/execution/monthly-task';
+import MonthlyProductionDashboardPage from './pages/production/execution/monthly-dashboard';
+import TempBlendingProcessPage from './pages/production/execution/temp-blending';
+import MonthlyTaskBuilder from './pages/production/execution/monthly-task/builder';
 
 export default function App() {
   return (
@@ -49,8 +61,18 @@ export default function App() {
           <Route path="plan/application" element={<PlanPoolApplicationList />} />
           <Route path="plan/execution/analysis" element={<PlanExecutionAnalysis />} />
           <Route path="plan/execution/dashboard" element={<PlanExecutionDashboard />} />
+          <Route path="production/scheduling/shifts" element={<TeamShiftsPage />} />
+          <Route path="production/scheduling/schedule" element={<TeamSchedulePage />} />
+          <Route path="production/scheduling/schedule/create" element={<SchedulePlanCreate />} />
+          <Route path="production/scheduling/schedule/detail/:id" element={<SchedulePlanDetail />} />
+          <Route path="production/scheduling/schedule/edit/:id" element={<SchedulePlanEdit />} />
+          <Route path="production/execution/monthly-task" element={<MonthlyProductionTaskPage />} />
+          <Route path="production/execution/monthly-task/builder" element={<MonthlyTaskBuilder />} />
+          <Route path="production/execution/monthly-dashboard" element={<MonthlyProductionDashboardPage />} />
+          <Route path="production/execution/temp-blending" element={<TempBlendingProcessPage />} />
           <Route path="customer/ledger" element={<CustomerLedger />} />
           <Route path="base/sub-brand" element={<SubBrandLedger />} />
+          <Route path="base/production-type" element={<ProductionTypeManagement />} />
           <Route path="system/user" element={<UserManagement />} />
           <Route path="system/role" element={<RoleManagement />} />
           <Route path="system/position" element={<PositionManagement />} />

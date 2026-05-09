@@ -3,30 +3,40 @@
  */
 
 /**
+ * 生产类型条目接口
+ */
+export interface ProductionType {
+  id: string;
+  order: number;
+  productType: string;
+  productionType: string;
+}
+
+/**
  * 生产类型枚举（全量 16 种）
  */
 export enum ProductionTypeEnum {
   // 香精香料 (4)
-  FlavorEntrusted = '香精香料受托加工',
-  FlavorProvincialTrial = '香精香料省公司试验',
-  FlavorIndependentTrial = '香精香料自主试验',
-  FlavorCentralizedMixing = '香精香料集中调配',
+  FlavorEntrusted = '受托加工',
+  FlavorProvincialTrial = '省公司试验',
+  FlavorIndependentTrial = '自主试验',
+  FlavorCentralizedMixing = '集中调配',
 
   // 再造烟叶 (7)
-  TobaccoRecipeFinished = '再造烟叶配方生产（成品）',
-  TobaccoRecipeSemi = '再造烟叶配方生产（自制半成品）',
-  TobaccoIndependentTrial = '再造烟叶自主试验',
-  TobaccoTurnBox = '再造烟叶翻箱',
-  TobaccoAgeing = '再造烟叶醇化',
-  TobaccoStemExtract = '再造烟叶省内梗丝回填液',
-  TobaccoAshSieving = '再造烟叶烟灰原料筛分',
+  TobaccoRecipeFinished = '配方生产（成品）',
+  TobaccoRecipeSemi = '配方生产（自制半成品）',
+  TobaccoIndependentTrial = '自主试验',
+  TobaccoTurnBox = '翻箱',
+  TobaccoAgeing = '醇化',
+  TobaccoStemExtract = '省内梗丝回填液',
+  TobaccoAshSieving = '烟灰原料筛分',
 
   // 再造梗丝 (5)
-  StemRecipeFinished = '再造梗丝配方生产（成品）',
-  StemRecipeSemi = '再造梗丝配方生产（自制半成品）',
-  StemIndependentTrial = '再造梗丝自主试验',
-  StemAgeing = '再造梗丝醇化',
-  StemPreMix = '再造梗丝预混',
+  StemRecipeFinished = '配方生产（成品）',
+  StemRecipeSemi = '配方生产（自制半成品）',
+  StemIndependentTrial = '自主试验',
+  StemAgeing = '醇化',
+  StemPreMix = '预混',
 }
 
 /**

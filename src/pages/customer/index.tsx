@@ -41,7 +41,7 @@ export default function CustomerLedger() {
 
       {/* 表格区域 */}
       <div className="flex-1 bg-white p-4 flex flex-col overflow-hidden">
-        <div className="border border-[#ebeef5] rounded-sm overflow-auto flex-1">
+        <div className="overflow-auto flex-1">
           <Table className="relative w-full">
             <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] whitespace-nowrap">
               <TableRow>

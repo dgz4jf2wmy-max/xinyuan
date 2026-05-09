@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Select } from '../../../components/ui/select';
-import { Search, Plus, RotateCcw, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Plus, RotateCcw, ArrowUpDown, ChevronDown, ChevronUp, Lock, Unlock } from 'lucide-react';
 import { mockProductionPoolData } from '../../../data/plan/productionPoolData';
 import { PoolApplicationStatus } from '../../../types/production-pool';
 import { PurchaseOrderApplicationModal } from './components/PurchaseOrderApplicationModal';
@@ -14,6 +14,16 @@ import clsx from 'clsx';
 export default function ProductionPoolList() {
   const navigate = useNavigate();
   const [data, setData] = useState(mockProductionPoolData);
+  const [frozenIds, setFrozenIds] = useState<Set<string>>(new Set());
+
+  const handleToggleFreeze = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSet = new Set(frozenIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setFrozenIds(newSet);
+  };
+
   const [searchKey, setSearchKey] = useState('');
   
   // Advanced filters
@@ -256,7 +266,7 @@ export default function ProductionPoolList() {
       </div>
 
       {/* 视图内容区 */}
-      <div className="flex-1 overflow-auto flex flex-col border border-[#ebeef5] rounded-sm">
+      <div className="flex-1 overflow-auto flex flex-col">
         <Table className="relative w-full">
           <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa] whitespace-nowrap">
             <TableRow>
@@ -280,6 +290,7 @@ export default function ProductionPoolList() {
               <TableHead>采购订单</TableHead>
               <TableHead>申请人</TableHead>
               <TableHead>申请人部门</TableHead>
+              <TableHead className="text-center w-[80px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -296,7 +307,7 @@ export default function ProductionPoolList() {
                   <React.Fragment key={groupName}>
                     {/* 分组表头行 */}
                     <TableRow className="bg-[#f0f2f5] hover:bg-[#f0f2f5]">
-                      <TableCell colSpan={24} className="py-2.5 text-sm font-semibold text-[#303133] border-t border-[#ebeef5]">
+                      <TableCell colSpan={25} className="py-2.5 text-sm font-semibold text-[#303133] border-t border-[#ebeef5]">
                         <span className="text-[#409eff] mr-2">◗</span>
                         {groupName} 
                         <span className="ml-2 text-xs font-normal text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
@@ -306,7 +317,7 @@ export default function ProductionPoolList() {
                     </TableRow>
                     {/* 分组内数据行 */}
                     {items.map((row) => (
-                      <TableRow key={row.id}>
+                      <TableRow key={row.id} className={clsx(frozenIds.has(row.id) && "opacity-50 grayscale bg-gray-50")}>
                         <TableCell className="text-center">{row.sequenceNumber}</TableCell>
                         <TableCell>{row.documentNo}</TableCell>
                         <TableCell>
@@ -371,6 +382,16 @@ export default function ProductionPoolList() {
                         <TableCell>{row.purchaseOrder || '--'}</TableCell>
                         <TableCell>{row.applicantName || '--'}</TableCell>
                         <TableCell>{row.applicantDepartment || '--'}</TableCell>
+                        <TableCell className="text-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={clsx("px-2 py-1 h-auto text-xs font-normal", frozenIds.has(row.id) ? "text-[#f56c6c] hover:bg-red-50 hover:text-[#f56c6c]" : "text-[#409eff] hover:bg-blue-50")}
+                            onClick={(e) => handleToggleFreeze(row.id, e)}
+                          >
+                            {frozenIds.has(row.id) ? <><Unlock className="w-3 h-3 mr-1" />解冻</> : <><Lock className="w-3 h-3 mr-1" />冻结</>}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </React.Fragment>
@@ -379,7 +400,7 @@ export default function ProductionPoolList() {
             ) : (
               // 扁平展示模式
               processedData.map((row, index) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className={clsx(frozenIds.has(row.id) && "opacity-50 grayscale bg-gray-50")}>
                   <TableCell className="text-center">{row.sequenceNumber}</TableCell>
                   <TableCell>{row.documentNo}</TableCell>
                   <TableCell>
@@ -444,6 +465,16 @@ export default function ProductionPoolList() {
                   <TableCell>{row.purchaseOrder || '--'}</TableCell>
                   <TableCell>{row.applicantName || '--'}</TableCell>
                   <TableCell>{row.applicantDepartment || '--'}</TableCell>
+                  <TableCell className="text-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={clsx("px-2 py-1 h-auto text-xs font-normal", frozenIds.has(row.id) ? "text-[#f56c6c] hover:bg-red-50 hover:text-[#f56c6c]" : "text-[#409eff] hover:bg-blue-50")}
+                      onClick={(e) => handleToggleFreeze(row.id, e)}
+                    >
+                      {frozenIds.has(row.id) ? <><Unlock className="w-3 h-3 mr-1" />解冻</> : <><Lock className="w-3 h-3 mr-1" />冻结</>}
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}

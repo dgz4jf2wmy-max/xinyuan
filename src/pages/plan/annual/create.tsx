@@ -282,7 +282,7 @@ export default function AnnualPlanCreate() {
             <span className="text-[13px] text-[#606266]">计划年份:</span>
             <Input 
               className="w-32 h-8" 
-              value={year} 
+              value={year ?? ''} 
               onChange={(e) => setYear(e.target.value)} 
               placeholder="输入年份"
             />
@@ -303,7 +303,7 @@ export default function AnnualPlanCreate() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 overflow-auto border border-[#ebeef5] rounded-sm">
+        <div className="flex-1 overflow-auto">
           <Table className="border-collapse w-full">
             <TableHeader>
               <TableRow className="bg-[#f5f7fa]">

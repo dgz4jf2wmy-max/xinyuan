@@ -335,7 +335,7 @@ export default function AnnualPlanAdjust() {
           </div>
         )}
 
-        <div className="flex-1 overflow-auto border border-[#ebeef5] rounded-sm">
+        <div className="flex-1 overflow-auto">
           <Table className="border-collapse w-full">
             <TableHeader>
               <TableRow className="bg-[#f5f7fa]">

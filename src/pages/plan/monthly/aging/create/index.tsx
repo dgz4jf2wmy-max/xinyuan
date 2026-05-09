@@ -193,15 +193,16 @@ export default function AgeingPlanCreate() {
            const boxAmount = Math.ceil(item.totalRequirementAmount / 0.05);
            const mockInventory = item.brandGrade === 'GS01' ? 15000 : 20000;
            newPlanItems.push({
+              id: item.id || Date.now().toString(),
               sequenceNumber: items.length + newPlanItems.length + 1,
               brandName: item.brandGrade || '', // 总牌号 GS60
-              month: item.deliveryDate ? `${parseInt(item.deliveryDate.split('-')[1], 10)}月` : '/',
+              month: `${new Date().getMonth() + 1}月`, // 自动获取当月
               subBrandGrade: item.productName || '', // 分牌号 GS6001
               boxCount: boxAmount,
               appliedCompletionAmount: boxAmount,
               availableInventory: mockInventory,
-              date: '实时生产日期',
-              processPlanNumber: '', // Default empty as per image
+              date: '',
+              sectionPlanNumber: '',
               remarks: '',
               poolItem: item
            });
@@ -466,32 +467,16 @@ export default function AgeingPlanCreate() {
                       </>
                     )}
 
-                    <TableCell className="border-r border-gray-100">
-                      <Input 
-                        value={item.month} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'month', e.target.value)} 
-                        placeholder="/"
-                        className="h-7 text-[12px] font-sans text-center border-transparent hover:border-gray-200 focus:bg-white"
-                      />
+                    <TableCell className="border-r border-gray-100 text-center text-gray-700 text-[12px]">
+                      {item.month}
                     </TableCell>
 
-                    <TableCell className="border-r border-gray-100">
-                      <Input 
-                        value={item.subBrandGrade} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'subBrandGrade', e.target.value)} 
-                        placeholder="分牌号和等级"
-                        className="h-7 text-[12px] font-sans border-transparent hover:border-gray-200 focus:bg-white font-mono"
-                      />
+                    <TableCell className="border-r border-gray-100 text-gray-700 text-[12px] font-mono">
+                      {item.subBrandGrade}
                     </TableCell>
 
-                    <TableCell className="border-r border-gray-100">
-                      <Input 
-                        type="number"
-                        value={item.boxCount || ''} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'boxCount', parseFloat(e.target.value) || 0)} 
-                        placeholder="0"
-                        className={cn("h-7 text-[12px] text-right font-bold font-mono border-transparent hover:border-gray-200 focus:bg-white", item.brandHasError ? "text-red-600 bg-red-50" : "text-blue-600")}
-                      />
+                    <TableCell className={cn("border-r border-gray-100 text-right text-[12px] font-bold font-mono", item.brandHasError ? "text-red-600 bg-red-50" : "text-blue-600")}>
+                      {item.boxCount || 0}
                     </TableCell>
 
                     <TableCell className="border-r border-gray-100">
@@ -506,8 +491,8 @@ export default function AgeingPlanCreate() {
 
                     <TableCell className="border-r border-gray-100">
                       <Input 
-                        value={item.processPlanNumber || ''} 
-                        onChange={(e) => updateItem(item.sequenceNumber, 'processPlanNumber', e.target.value)} 
+                        value={item.sectionPlanNumber || ''} 
+                        onChange={(e) => updateItem(item.sequenceNumber, 'sectionPlanNumber', e.target.value)} 
                         placeholder=""
                         className="h-7 text-[12px] font-mono border-transparent hover:border-gray-200 focus:bg-white"
                       />
