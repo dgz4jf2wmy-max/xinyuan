@@ -6,9 +6,17 @@ export interface MonthlyTaskBaseInfo {
   executionStatus: string;
   month: number;
   currentVersion: string;
+  cooperationEquipment?: string;
+  cooperationOffice?: string;
+  cooperationTechnology?: string;
+  cooperationSales?: string;
+  remarks?: string;
   creator: string;
   createTime: string;
   lastUpdateTime: string;
+  reconScheduleNo?: string;
+  stemScheduleNo?: string;
+  flavorScheduleNo?: string;
 }
 
 export interface MonthlyProductionArrangement {
@@ -20,7 +28,11 @@ export interface MonthlyProductionArrangement {
   productName: string;
   productCode: string;
   brand: string;
+  productionType?: string;
   productionVolume: number;
+  reportedVolume?: number;
+  theoreticalVolume?: number;
+  inboundVolume?: number;
   completionDate: string;
   blendingQuantity: number;
   blendingRatio: number;
@@ -89,18 +101,29 @@ export interface OtherProductionArrangement {
    * 再造梗丝：醇化｜预混
    */
   productionType: string;
-  
+
+  /**
+   * 业务类型 (扩展)
+   */
+  type?: string;
+
   /**
    * 产量/投料量
    * 类型: 数字（.00）
    * 属性: 只读
    * 详细规则与说明: 默认值：月度产销计划内需求量。
    * 单位：需注明单位为吨
-   * 省内梗丝回填液：月度生产安排中，配方生产（成品）与配方生产（自制半成品）的产量求和后除经验系数（人工维护）。
-   * 醇化：根据分牌号的需求量自动生成醇化任务，醇化需注明单位为箱。
+   * 省内梗丝回填液：月度生产安排中，再造梗丝配方生产（成品）与再造梗丝配方生产（自制半成品）的产量求和后除经验系数（人工维护）。
+   * 醇化：再造烟叶配方生产（成品）、再造梗丝配方生产（成品）根据分牌号的需求量自动生成醇化任务，醇化需注明单位为箱。
    */
   productionVolume: number;
-  
+
+  /**
+   * 报工产量
+   * 类型: 数字（.00）
+   */
+  reportedVolume?: number;
+
   /**
    * 完成日期
    * 类型: 时间（yyyy-mm-dd）
@@ -116,7 +139,7 @@ export interface MonthlyProductionTask {
   otherArrangements: OtherProductionArrangement[];
 }
 
-export interface MonthlyFlavorProductionDetail {
+export interface MonthlyTaskRequirementDetail {
   id?: number;
   productType: string;
   productionType: string;
@@ -132,7 +155,7 @@ export interface MonthlyFlavorProductionDetail {
   expectedCompletionDate?: string;
   arrivalTime?: string;
   arrivalLocation?: string;
-  applicantId: number;
-  applicantDepartmentId: number;
+  applicant: number;
+  applicantDepartment: number;
   subBrand: string;
 }

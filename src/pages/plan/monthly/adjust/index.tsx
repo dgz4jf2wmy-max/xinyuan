@@ -342,10 +342,10 @@ export default function MonthlyProductionPlanAdjust() {
                <div className="flex items-center gap-2">
                  <span className="text-xs font-bold text-[#409eff] bg-[#ecf5ff] px-3 py-1 rounded-full border border-[#d9ecff]">已排: {currentDraftTables.length}</span>
                  <Button variant="outline" size="sm" className="h-7 text-xs border-blue-400 text-blue-500 hover:bg-blue-50" onClick={() => setIsPOModalOpen(true)}>
-                   <Plus className="w-3 h-3 mr-1" /> 新增需求(订单)
+                   <Plus className="w-3 h-3 mr-1" /> 新增需求(销售订单)
                  </Button>
                  <Button variant="outline" size="sm" className="h-7 text-xs border-amber-400 text-amber-500 hover:bg-amber-50" onClick={() => setIsNonPOModalOpen(true)}>
-                   <Plus className="w-3 h-3 mr-1" /> 新增需求(非订单)
+                   <Plus className="w-3 h-3 mr-1" /> 新增需求(非销售订单)
                  </Button>
                </div>
             </div>

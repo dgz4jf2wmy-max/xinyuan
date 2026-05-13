@@ -1,28 +1,38 @@
 import { useState } from 'react';
-import { Search, Plus, Filter, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, RotateCcw } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
+import { Select } from '../../../../components/ui/select';
 import { mockTempBlendingRecords } from '../../../../data/production/execution/tempBlendingData';
-import { TempBlendingRecord } from '../../../../types/production/execution/tempBlending';
+import { TemporaryBlendingApplication } from '../../../../types/production/execution/temporaryBlendingApplication';
+import { TempBlendingApplyModal } from './components/TempBlendingApplyModal';
 
 export default function TempBlendingProcessPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [records, setRecords] = useState<TempBlendingRecord[]>(mockTempBlendingRecords);
+  const [records, setRecords] = useState<TemporaryBlendingApplication[]>(mockTempBlendingRecords);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const getStatusBadge = (status: TempBlendingRecord['status']) => {
+  const getStatusText = (status: TemporaryBlendingApplication['status']) => {
     switch (status) {
-      case 'DRAFT':
-        return <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800 border border-gray-200">草稿</span>;
-      case 'APPROVING':
-        return <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 border border-blue-200">审批中</span>;
-      case 'APPROVED':
-        return <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800 border border-green-200">已批准</span>;
-      case 'REJECTED':
-        return <span className="px-2 py-1 text-xs rounded bg-red-100 text-red-800 border border-red-200">已拒绝</span>;
+      case '草稿中':
+        return <span className="text-gray-500">草稿中</span>;
+      case '待审核':
+      case '待确认':
+        return <span className="text-[#e6a23c]">{status}</span>;
+      case '已同意':
+        return <span className="text-[#67c23a]">已同意</span>;
+      case '已拒绝':
+        return <span className="text-[#f56c6c]">已拒绝</span>;
       default:
-        return null;
+        return status;
     }
+  };
+
+  const handleCreate = (newApply: TemporaryBlendingApplication) => {
+    setRecords([newApply, ...records]);
   };
 
   return (
@@ -31,83 +41,117 @@ export default function TempBlendingProcessPage() {
         <div className="flex-1 p-4 lg:p-6 flex flex-col overflow-hidden">
           
           {/* Search Area */}
-          <div className="flex flex-wrap gap-4 items-center mb-4 shrink-0">
-            <div className="w-48">
-              <Input 
-                placeholder="回掺单号 / 申请人 / 车间..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="flex justify-between items-start mb-4 shrink-0">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="w-64">
+                <Input 
+                  placeholder="搜索申请编号、产品..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-white"
+                />
+              </div>
             </div>
             
-            <div className="flex gap-2 ml-auto">
-              <Button variant="primary" size="sm">
+            <div className="flex gap-2">
+              <Button variant="primary" onClick={() => {}} className="bg-[#409eff] hover:bg-[#66b1ff]">
                 <Search className="w-3.5 h-3.5 mr-1" /> 查询
               </Button>
-              <Button variant="primary" size="sm" onClick={() => setSearchTerm('')}>
-                <Filter className="w-3.5 h-3.5 mr-1" /> 重置
+              <Button variant="primary" onClick={() => setSearchTerm('')} className="bg-[#409eff] hover:bg-[#66b1ff]">
+                <RotateCcw className="w-3.5 h-3.5 mr-1" /> 重置
               </Button>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 mb-4 shrink-0">
-            <Button variant="primary" size="sm">
-              <Plus className="w-3.5 h-3.5 mr-1" /> 发起回掺申请
+          <div className="flex justify-end mb-4 shrink-0">
+            <Button variant="primary" onClick={() => setIsModalOpen(true)} className="bg-[#409eff] hover:bg-[#66b1ff]">
+              <Plus className="w-3.5 h-3.5 mr-1" /> 新增申请
             </Button>
           </div>
 
           {/* Table Area */}
-          <div className="flex-1 overflow-auto flex flex-col">
-            <Table className="relative w-full">
-              <TableHeader className="sticky top-0 z-10 bg-[#f5f7fa]">
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">序号</TableHead>
-                  <TableHead className="text-center">回掺单号</TableHead>
-                  <TableHead className="text-center">申请日期</TableHead>
-                  <TableHead className="text-center">申请人</TableHead>
-                  <TableHead className="text-center">所在车间/部门</TableHead>
-                  <TableHead className="text-center">物料类型</TableHead>
-                  <TableHead className="text-center">回掺数量 (公斤)</TableHead>
-                  <TableHead className="text-center">状态</TableHead>
-                  <TableHead className="text-center w-[120px]">操作</TableHead>
+          <div className="flex-1 overflow-auto bg-white">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-[#f5f7fa] hover:bg-[#f5f7fa]">
+                  <TableHead className="text-center font-medium text-[#606266]">申请编号</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">状态</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">月度生产任务编号</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">产品名称</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">产品编号</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">牌号</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">生产类型</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">回掺数量</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">回掺比例</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">申请人</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">创建时间</TableHead>
+                  <TableHead className="text-center font-medium text-[#606266]">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {records.filter(r => r.recordNo.includes(searchTerm) || r.applicant.includes(searchTerm) || r.department.includes(searchTerm)).map((record, index) => (
-                  <TableRow key={record.id} className="hover:bg-[#f5f7fa]">
-                    <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
-                    <TableCell className="text-center font-medium text-[#1890ff] cursor-pointer">
-                      {record.recordNo}
-                    </TableCell>
-                    <TableCell className="text-center">{record.applyDate}</TableCell>
-                    <TableCell className="text-center">{record.applicant}</TableCell>
-                    <TableCell className="text-center">{record.department}</TableCell>
-                    <TableCell className="text-center">{record.materialType}</TableCell>
-                    <TableCell className="text-center font-medium">{record.blendingQuantity.toLocaleString()}</TableCell>
-                    <TableCell className="text-center">{getStatusBadge(record.status)}</TableCell>
+                {records.filter(r => r.applicationNo.includes(searchTerm) || r.productName.includes(searchTerm)).map((record) => (
+                  <TableRow key={record.applicationNo}>
+                    <TableCell className="text-center text-[#606266]">{record.applicationNo}</TableCell>
+                    <TableCell className="text-center font-medium">{getStatusText(record.status)}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.monthlyTaskNo}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.productName}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.productCode}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.brand}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.productionType}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.blendingQuantity ? record.blendingQuantity.toFixed(2) : ''}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.blendingRatio ? record.blendingRatio.toFixed(2) : ''}{record.blendingRatio ? '%' : ''}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.applicant}</TableCell>
+                    <TableCell className="text-center text-[#606266]">{record.createdAt}</TableCell>
                     <TableCell className="text-center">
-                      <div className="flex justify-center gap-2">
-                        {record.status === 'DRAFT' && (
-                          <Button variant="ghost" size="sm" className="text-[#1890ff] h-8 px-2 hover:bg-blue-50 relative after:content-[''] after:absolute after:right-[-4px] after:top-[8px] after:h-[12px] after:w-[1px] after:bg-[#e4e7ed]">编辑</Button>
+                      <div className="flex justify-center gap-1">
+                        {record.status === '草稿中' ? (
+                          <>
+                            <Button variant="ghost" size="sm" className="text-[#409eff] hover:text-[#66b1ff] h-6 px-2">编辑</Button>
+                            <Button variant="ghost" size="sm" className="text-[#f56c6c] hover:bg-red-50 hover:text-[#f78989] h-6 px-2">删除</Button>
+                          </>
+                        ) : (
+                          <Button variant="ghost" size="sm" className="text-[#409eff] hover:text-[#66b1ff] h-6 px-2" onClick={() => navigate(`/production/execution/temp-blending/detail/${record.applicationNo}`)}>查看</Button>
                         )}
-                        <Button variant="ghost" size="sm" className="text-[#1890ff] h-8 px-2 hover:bg-blue-50">查看</Button>
                       </div>
                     </TableCell>
                   </TableRow>
                 ))}
                 {records.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center text-gray-500">
+                    <TableCell colSpan={12} className="h-24 text-center text-[#909399]">
                       暂无数据
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
+            
+            {/* 模拟分页器位置 */}
+            <div className="mt-4 pt-2 mb-4">
+              <div className="flex items-center text-sm text-[#606266]">
+                共 {records.length} 条
+                <div className="ml-4 flex items-center gap-2">
+                  <Select 
+                    options={[
+                      { label: '10条/页', value: '10' },
+                      { label: '20条/页', value: '20' },
+                      { label: '50条/页', value: '50' }
+                    ]}
+                    defaultValue="10"
+                    className="w-[100px] h-8 bg-white text-xs border border-gray-300 rounded"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      
+      <TempBlendingApplyModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreate}
+      />
     </div>
   );
 }

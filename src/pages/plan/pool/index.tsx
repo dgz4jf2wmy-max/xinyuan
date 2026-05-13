@@ -251,13 +251,13 @@ export default function ProductionPoolList() {
                   className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 transition-colors"
                   onClick={() => { setIsPOModalOpen(true); setIsApplicationDropdownOpen(false); }}
                 >
-                  采购订单类申请
+                  销售订单类申请
                 </div>
                 <div 
                   className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] text-gray-700 font-medium border-l-[3px] border-transparent hover:border-blue-500 transition-colors"
                   onClick={() => { setIsNonPOModalOpen(true); setIsApplicationDropdownOpen(false); }}
                 >
-                  非采购订单类申请
+                  非销售订单类申请
                 </div>
               </div>
             </div>

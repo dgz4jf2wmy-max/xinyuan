@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../../../../components/ui/button';
 import { Modal } from '../../../../components/ui/modal';
 import { mockCustomerData } from '../../../../data/customerData';
+import { mockUsers } from '../../../../data/system/userData';
 import { ProductInfo } from '../../../../types/plan';
 import { RestrictedProductionTypeByProductCategory } from '../../../../types/base-data';
 import { ProductSelector } from '../../../plan/components/ProductSelector';
@@ -21,7 +22,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
   const [customer, setCustomer] = useState(mockCustomerData[0]?.customerName || '');
   const [remarks, setRemarks] = useState('');
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
-  const salesperson = '当前用户';
+  const [salesperson, setSalesperson] = useState('当前用户');
   const department = '营销部';
   const currency = '人民币';
 
@@ -81,6 +82,10 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
   }, 0);
 
   const handleSubmit = () => {
+    if (!salesperson || !salesperson.trim()) {
+      alert("请输入业务员");
+      return;
+    }
     if (details.length === 0) {
       alert("请至少添加一条产品明细");
       return;
@@ -142,7 +147,7 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="计划池入池申请 - 采购订单类"
+      title="计划池入池申请 - 销售订单类"
       maxWidth="full"
       className="md:max-w-[95vw]"
       footer={footer}
@@ -185,8 +190,14 @@ export function PurchaseOrderApplicationModal({ isOpen, onClose, onSubmit }: Pur
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">业务员</label>
-                <input type="text" readOnly value={salesperson} className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1.5 text-sm text-gray-500" />
+                <label className="block text-xs font-medium text-gray-600 mb-1"><span className="text-red-500 mr-1">*</span>业务员</label>
+                <select value={salesperson} onChange={(e) => setSalesperson(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500">
+                  <option value="">请选择业务员</option>
+                  <option value="当前用户">当前用户</option>
+                  {mockUsers.map(user => (
+                    <option key={user.id} value={user.realName}>{user.realName}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">部门</label>

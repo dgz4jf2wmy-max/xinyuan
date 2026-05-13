@@ -1,0 +1,42 @@
+import { ProductionTask } from "../../types/production/execution/productionTask";
+
+export const mockShiftHandoverTasks: (ProductionTask & { id: number })[] = [
+  {
+    id: 1,
+    productionLine: '再造烟叶',
+    productType: '再造烟叶',
+    productionOrder: 1,
+    status: '已执行',
+    taskNo: 'SCRW-ZY-05-001',
+    productName: '再造烟叶',
+    productCode: 'P-ZY-001',
+    brand: 'HBZY-10',
+    productionType: '配方生产（成品）',
+    reportedVolume: 120.00,
+    theoreticalVolume: 120.00,
+    inboundVolume: 120.00,
+    productionVolume: 120.00,
+    completionDate: '2026-05-10',
+    blendingQuantity: 10.00,
+    blendingRatio: 5.00,
+  },
+  {
+    id: 2,
+    productionLine: '再造梗丝',
+    productType: '再造梗丝',
+    productionOrder: 2,
+    status: '在执行',
+    taskNo: 'SCRW-GS-05-001',
+    productName: '再造梗丝',
+    productCode: 'P-GS-001',
+    brand: 'GS22',
+    productionType: '配方生产（成品）',
+    reportedVolume: 20.00,
+    theoreticalVolume: 25.00,
+    inboundVolume: 15.00,
+    productionVolume: 80.00,
+    completionDate: '2026-05-12',
+    blendingQuantity: 5.00,
+    blendingRatio: 2.00,
+  }
+];

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter } from 'lucide-react';
+import { Search, Plus, Filter, Settings } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
@@ -11,6 +11,11 @@ export default function MonthlyProductionTaskPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [tasks] = useState<MonthlyProductionTask[]>(mockMonthlyProductionTasks);
+  
+  // 公式配置 modal state
+  const [isFormulaModalOpen, setIsFormulaModalOpen] = useState(false);
+  const [coefficient, setCoefficient] = useState<string>('2');
+
 
   const getApprovalStatusBadge = (status: string) => {
     switch (status) {
@@ -57,6 +62,9 @@ export default function MonthlyProductionTaskPage() {
             </div>
             
             <div className="flex gap-2 ml-auto">
+              <Button variant="outline" size="sm" onClick={() => setIsFormulaModalOpen(true)}>
+                <Settings className="w-3.5 h-3.5 mr-1" /> 回填液公式配置
+              </Button>
               <Button variant="primary" size="sm">
                 <Search className="w-3.5 h-3.5 mr-1" /> 查询
               </Button>
@@ -102,12 +110,19 @@ export default function MonthlyProductionTaskPage() {
                     <TableCell className="text-center">{task.baseInfo.lastUpdateTime}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center items-center gap-3">
-                        <span className="text-[#1890ff] cursor-pointer hover:opacity-80">查看</span>
-                        {task.baseInfo.executionStatus !== '已执行' && (
+                        <span 
+                           className="text-[#1890ff] cursor-pointer hover:opacity-80"
+                           onClick={() => navigate(`/production/execution/monthly-task/detail/${task.baseInfo.id}`)}
+                        >查看</span>
+                        {task.baseInfo.approvalStatus === '待编制' ? (
                           <span 
                             onClick={() => navigate('/production/execution/monthly-task/builder')} 
                             className="text-[#e6a23c] cursor-pointer hover:opacity-80"
                           >
+                            编制
+                          </span>
+                        ) : (
+                          <span className="text-[#c0c4cc] cursor-not-allowed">
                             编制
                           </span>
                         )}
@@ -127,6 +142,43 @@ export default function MonthlyProductionTaskPage() {
           </div>
         </div>
       </div>
+      
+      {/* 弹窗组件：回填液公式配置 */}
+      {isFormulaModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-[400px] overflow-hidden">
+            <div className="px-5 py-3 border-b border-[#e4e7ed] bg-[#fafafa] flex items-center text-gray-800">
+              <h3 className="font-semibold text-sm">省内梗丝回填液公式配制</h3>
+            </div>
+            <div className="px-5 py-10 flex items-center justify-center gap-4">
+              <span className="text-lg font-medium text-gray-800">产量</span>
+              <span className="text-xl text-gray-400">/</span>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  list="coefficient-options" 
+                  value={coefficient} 
+                  onChange={(e) => setCoefficient(e.target.value)} 
+                  placeholder="经验系数"
+                  className="w-32 border border-slate-300 rounded px-3 py-2 text-base focus:border-[#409eff] outline-none text-center bg-white"
+                />
+                <datalist id="coefficient-options">
+                  <option value="2" />
+                  <option value="2.5" />
+                </datalist>
+              </div>
+            </div>
+            <div className="px-5 py-3 border-t border-[#e4e7ed] bg-[#fafafa] flex justify-end space-x-2">
+              <Button variant="outline" size="sm" onClick={() => setIsFormulaModalOpen(false)}>取消</Button>
+              <Button variant="primary" size="sm" onClick={() => {
+                localStorage.setItem('blend_coefficient', coefficient);
+                alert('保存成功');
+                setIsFormulaModalOpen(false);
+              }}>保存配置</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

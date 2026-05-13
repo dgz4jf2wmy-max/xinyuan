@@ -14,12 +14,16 @@ import { MonthlyAgingPlanItem } from '../../../../types/monthly-plan';
 import { cn } from '../../../../lib/utils';
 
 const getTaskCategory = (type: string, subType: string, productName: string): 'recon' | 'flavor' | 'other' => {
+  if (subType === '醇化' || subType === '省内梗丝回填液') {
+    return 'other';
+  }
+  
   if (type === '香精香料') {
     if (['受托加工', '集中调配', '省公司试验', '自主试验'].includes(subType)) {
       return 'flavor';
     }
   } else if (type === '再造烟叶' || type === '再造梗丝') {
-    if (['配方生产（成品）', '配方生产（自制半成品）', '自主试验', '醇化', '翻箱', '烟灰原料筛分', '省内梗丝回填液'].includes(subType)) {
+    if (['配方生产（成品）', '配方生产（自制半成品）', '自主试验', '翻箱', '烟灰原料筛分'].includes(subType)) {
       return 'recon';
     }
   }
@@ -63,13 +67,15 @@ type DraftTask = LocalPlanItem & {
 };
 
 // 将产销计划明细转换为计划池项（参照月度产销计划表实体及其详情页展示方式）
-const mappedProductionPlans: LocalPlanItem[] = (mockMonthlyProductionPlanDetail.planList || []).map(plan => {
+const mappedProductionPlans: LocalPlanItem[] = (mockMonthlyProductionPlanDetail.planList || [])
+  .filter(plan => plan.brandGrade !== '/')
+  .map(plan => {
   // 查找匹配的明细以获取单位、交期等扩展信息（用于后续排产逻辑）
   const matchedDetails = mockMonthlyProductionPlanDetail.details.filter(
     d => d.brandGrade === plan.brandGrade && d.productType === plan.productType
   );
   
-  const firstDetail = matchedDetails[0] || {};
+  const firstDetail = matchedDetails[0] || ({} as any);
   
   let subType = plan.productionType || firstDetail.productionType || '';
   if (!subType) {
@@ -95,6 +101,8 @@ const mappedProductionPlans: LocalPlanItem[] = (mockMonthlyProductionPlanDetail.
   };
 });
 
+import { MonthlyTaskPreviewModal } from './preview-modal';
+
 export default function MonthlyTaskBuilder() {
   const navigate = useNavigate();
   const [plansPool, setPlansPool] = useState<LocalPlanItem[]>(mappedProductionPlans);
@@ -102,6 +110,8 @@ export default function MonthlyTaskBuilder() {
   const [activeTab, setActiveTab] = useState('production-sales');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [taskDrafts, setTaskDrafts] = useState<DraftTask[]>([]);
+  const [isBaseInfoExpanded, setIsBaseInfoExpanded] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   const [baseInfo, setBaseInfo] = useState({
     taskNo: `SCAP-2026${String(new Date().getMonth() + 1).padStart(2, '0')}-001`,
@@ -112,7 +122,15 @@ export default function MonthlyTaskBuilder() {
     currentVersion: 'V1.0',
     creator: '张建国',
     createTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
-    lastUpdateTime: '-'
+    lastUpdateTime: '-',
+    cooperationEquipment: '请根据本生产安排做好动力能源供应等工作。',
+    cooperationOffice: '请根据本生产安排做好班车、食堂保障等工作。',
+    cooperationTechnology: '请根据本生产安排做好工艺配方下发等工作。',
+    cooperationSales: '请根据本生产安排做好原辅料保障等工作。',
+    remarks: '',
+    reconScheduleNo: '',
+    stemScheduleNo: '',
+    flavorScheduleNo: ''
   });
 
   const handleMonthChange = (newMonth: number) => {
@@ -128,7 +146,7 @@ export default function MonthlyTaskBuilder() {
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const [activeRightTab, setActiveRightTab] = useState('recon');
 
-  const [blendModal, setBlendModal] = useState<{ isOpen: boolean; pendingPlan: LocalPlanItem | null; ratio: string; deduct: boolean }>({ isOpen: false, pendingPlan: null, ratio: '5%', deduct: true });
+  const [blendModal, setBlendModal] = useState<{ isOpen: boolean; pendingPlan: LocalPlanItem | null; ratio: string; deduct: boolean; willBlend: boolean }>({ isOpen: false, pendingPlan: null, ratio: '5%', deduct: true, willBlend: true });
   const [splitModal, setSplitModal] = useState<{ isOpen: boolean; targetTask: DraftTask | null; splits: {amount: number|string, date: string, target: string}[] }>({ isOpen: false, targetTask: null, splits: [{amount: 0, date: '', target: ''}, {amount: 0, date: '', target: ''}] });
 
   const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
@@ -143,21 +161,40 @@ export default function MonthlyTaskBuilder() {
     setExpandedTaskIds(newExpanded);
   };
 
-  const [formConfig, setFormConfig] = useState({
-    reconSchedulePlan: '',
-    flavorSchedulePlan: ''
-  });
-
   const handleAutoConvertAll = () => {
-    const newTasks = plansPool.map(plan => ({
-      ...plan,
-      taskId: `T-${plan.id}-${Date.now().toString().slice(-4)}`,
-      splitIndex: 0, 
-      hasBlend: mockBlendLibrary.some(b => plan.productName.includes(b)), 
-      blendRatio: mockBlendLibrary.some(b => plan.productName.includes(b)) ? '5%' : null
-    }));
+    let newDrafts = [...taskDrafts];
+    plansPool.forEach(plan => {
+      const hasBlend = mockBlendLibrary.some(b => plan.productName.includes(b));
+      const blendRatio = hasBlend ? '5%' : null;
+      
+      const existingIndex = newDrafts.findIndex(t => 
+        t.type === plan.type && 
+        t.subType === plan.subType && 
+        t.productName === plan.productName &&
+        t.hasBlend === hasBlend &&
+        t.blendRatio === blendRatio
+      );
+
+      if (existingIndex > -1) {
+        const existing = { ...newDrafts[existingIndex] };
+        existing.amount = Number(existing.amount || 0) + Number(plan.amount || 0);
+        if (plan.flavorDetails) {
+          existing.flavorDetails = [...(existing.flavorDetails || []), ...plan.flavorDetails];
+        }
+        newDrafts[existingIndex] = existing;
+      } else {
+        const newTask: DraftTask = {
+          ...plan,
+          taskId: `T-${plan.id}-${Date.now().toString().slice(-4)}${Math.floor(Math.random()*1000)}`,
+          splitIndex: 0,
+          hasBlend,
+          blendRatio
+        };
+        newDrafts.push(newTask);
+      }
+    });
     
-    setTaskDrafts([...taskDrafts, ...newTasks]);
+    setTaskDrafts(newDrafts);
     setPlansPool([]);
   };
 
@@ -234,7 +271,7 @@ export default function MonthlyTaskBuilder() {
 
   const handleMoveToTask = (plan: PlanItem) => {
     if (mockBlendLibrary.some(b => plan.productName.includes(b))) {
-      setBlendModal({ isOpen: true, pendingPlan: plan, ratio: '5%', deduct: true });
+      setBlendModal({ isOpen: true, pendingPlan: plan, ratio: '5%', deduct: true, willBlend: true });
     } else {
       executeMoveToTask(plan, null);
     }
@@ -242,18 +279,37 @@ export default function MonthlyTaskBuilder() {
 
   const executeMoveToTask = (plan: PlanItem | null, blendParams: { ratio: string, deduct: boolean } | null) => {
     if (!plan) return;
-    const newTask: DraftTask = {
-      ...plan,
-      taskId: `T-${plan.id}-${Math.floor(Math.random()*10000)}`,
-      splitIndex: 0,
-      hasBlend: !!blendParams,
-      blendRatio: blendParams ? blendParams.ratio : null
-    };
+    let newDrafts = [...taskDrafts];
+    const existingIndex = newDrafts.findIndex(t => 
+      t.type === plan.type && 
+      t.subType === plan.subType && 
+      t.productName === plan.productName &&
+      t.hasBlend === !!blendParams &&
+      t.blendRatio === (blendParams ? blendParams.ratio : null)
+    );
+
+    if (existingIndex > -1) {
+      const existing = { ...newDrafts[existingIndex] };
+      existing.amount = Number(existing.amount || 0) + Number(plan.amount || 0);
+      if (plan.flavorDetails) {
+        existing.flavorDetails = [...(existing.flavorDetails || []), ...plan.flavorDetails];
+      }
+      newDrafts[existingIndex] = existing;
+    } else {
+      const newTask: DraftTask = {
+        ...plan,
+        taskId: `T-${plan.id}-${Math.floor(Math.random()*10000)}`,
+        splitIndex: 0,
+        hasBlend: !!blendParams,
+        blendRatio: blendParams ? blendParams.ratio : null
+      };
+      newDrafts.push(newTask);
+    }
     
-    setTaskDrafts([...taskDrafts, newTask]);
+    setTaskDrafts(newDrafts);
     setPlansPool(plansPool.filter(p => p.id !== plan.id));
     setAgingPlansPool(agingPlansPool.filter(p => p.id !== plan.id));
-    setBlendModal({ isOpen: false, pendingPlan: null, ratio: '5%', deduct: true });
+    setBlendModal({ isOpen: false, pendingPlan: null, ratio: '5%', deduct: true, willBlend: true });
   };
 
   const handleDeleteFlavorDetail = (task: DraftTask, detailId: string, event: React.MouseEvent) => {
@@ -346,20 +402,63 @@ export default function MonthlyTaskBuilder() {
     setTaskDrafts(taskDrafts.filter(t => t.taskId !== task.taskId));
   };
 
-  const handleSortInGroup = (taskId: string, direction: 'up' | 'down', filterFn: (t: DraftTask) => boolean) => {
-    const groupTasks = taskDrafts.filter(filterFn);
-    const groupIndex = groupTasks.findIndex(t => t.taskId === taskId);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
+
+  const handleTaskDragStart = (e: React.DragEvent, taskId: string) => {
+    e.stopPropagation();
+    setDraggedTaskId(taskId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleTaskDragOver = (e: React.DragEvent, taskId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggedPlan) return; // Allow drop for left plans
+    if (!draggedTaskId) return;
+    if (taskId !== draggedTaskId) {
+      setDragOverTaskId(taskId);
+    }
+  };
+
+  const handleTaskDrop = (e: React.DragEvent, targetTaskId: string, filterFn: (t: DraftTask) => boolean) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverTaskId(null);
+
+    if (!draggedTaskId) {
+      if (draggedPlan) {
+        // Fallback: If dropped from left list to right task directly
+        const zoneType = getTaskCategory(draggedPlan.type, draggedPlan.subType, draggedPlan.productName);
+        if (isValidDrop(draggedPlan, zoneType)) {
+          handleMoveToTask(draggedPlan);
+        }
+      }
+      return;
+    }
     
-    if ((direction === 'up' && groupIndex === 0) || 
-        (direction === 'down' && groupIndex === groupTasks.length - 1)) return;
+    if (draggedTaskId && draggedTaskId !== targetTaskId) {
+      const groupTasks = taskDrafts.filter(filterFn);
+      const sourceIdx = groupTasks.findIndex(t => t.taskId === draggedTaskId);
+      const targetIdx = groupTasks.findIndex(t => t.taskId === targetTaskId);
+      
+      if (sourceIdx > -1 && targetIdx > -1) {
+        const newDrafts = [...taskDrafts];
+        const globalSourceIdx = taskDrafts.findIndex(t => t.taskId === draggedTaskId);
+        const [movedItem] = newDrafts.splice(globalSourceIdx, 1);
+        
+        const globalTargetIdx = newDrafts.findIndex(t => t.taskId === targetTaskId);
+        newDrafts.splice(globalTargetIdx + (sourceIdx < targetIdx ? 0 : 0), 0, movedItem);
+        
+        setTaskDrafts(newDrafts);
+      }
+    }
+    setDraggedTaskId(null);
+  };
 
-    const swapTask = groupTasks[direction === 'up' ? groupIndex - 1 : groupIndex + 1];
-    const globalIndex1 = taskDrafts.findIndex(t => t.taskId === taskId);
-    const globalIndex2 = taskDrafts.findIndex(t => t.taskId === swapTask.taskId);
-
-    const newDrafts = [...taskDrafts];
-    [newDrafts[globalIndex1], newDrafts[globalIndex2]] = [newDrafts[globalIndex2], newDrafts[globalIndex1]];
-    setTaskDrafts(newDrafts);
+  const handleTaskDragEnd = () => {
+    setDraggedTaskId(null);
+    setDragOverTaskId(null);
   };
 
   const executeSplit = () => {
@@ -402,7 +501,66 @@ export default function MonthlyTaskBuilder() {
 
   const reconTasks = taskDrafts.filter(t => getTaskCategory(t.type, t.subType, t.productName) === 'recon');
   const flavorTasks = taskDrafts.filter(t => getTaskCategory(t.type, t.subType, t.productName) === 'flavor');
-  const otherTasks = taskDrafts.filter(t => getTaskCategory(t.type, t.subType, t.productName) === 'other');
+  let otherTasks = taskDrafts.filter(t => getTaskCategory(t.type, t.subType, t.productName) === 'other');
+
+  // Auto-generate based on requirements
+  const agingTasksMap = new Map<string, { type: string, amount: number, deadline: string }>();
+  let stemBlendAmount = 0;
+
+  taskDrafts.forEach(t => {
+    if (t.type === '再造梗丝' && ['配方生产（成品）', '配方生产（自制半成品）'].includes(t.subType)) {
+      stemBlendAmount += Number(t.amount || 0);
+    }
+
+    if (['再造烟叶', '再造梗丝'].includes(t.type) && t.subType === '配方生产（成品）') {
+      const existing = agingTasksMap.get(t.productName);
+      agingTasksMap.set(t.productName, {
+        type: t.type,
+        amount: (existing?.amount || 0) + Number(t.amount || 0),
+        deadline: t.deadline || existing?.deadline || '-'
+      });
+    }
+  });
+
+  if (stemBlendAmount > 0) {
+    const coefficientStr = localStorage.getItem('blend_coefficient') || '2';
+    const coefficient = parseFloat(coefficientStr) || 2;
+    if (!otherTasks.some(t => t.subType === '省内梗丝回填液')) {
+      otherTasks.push({
+        id: 'auto-blend',
+        taskId: 'auto-blend',
+        type: '再造烟叶',
+        subType: '省内梗丝回填液',
+        productName: '省内梗丝回填液',
+        amount: Number((stemBlendAmount / coefficient).toFixed(2)),
+        unit: '吨',
+        source: '自动生成',
+        deadline: '-',
+        splitIndex: 0,
+        hasBlend: false,
+        blendRatio: null
+      } as DraftTask);
+    }
+  }
+
+  agingTasksMap.forEach((data, productName) => {
+    if (!otherTasks.some(t => t.productName === productName && t.subType === '醇化')) {
+      otherTasks.push({
+        id: `auto-aging-${productName}`,
+        taskId: `auto-aging-${productName}`,
+        type: data.type,
+        subType: '醇化',
+        productName: productName,
+        amount: data.amount,
+        unit: '箱',
+        source: '自动生成',
+        deadline: data.deadline,
+        splitIndex: 0,
+        hasBlend: false,
+        blendRatio: null
+      } as DraftTask);
+    }
+  });
 
   return (
     <div className="flex flex-col h-full w-full bg-white relative">
@@ -414,14 +572,9 @@ export default function MonthlyTaskBuilder() {
               <h2 className="text-xl font-bold text-gray-800">月度生产任务编制</h2>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsPreviewOpen(true)}>预览</Button>
               <Button variant="outline" size="sm" onClick={() => {
-                if (taskDrafts.length > 0) {
-                  if (window.confirm('有未保存的任务，确定要退出吗？')) {
-                    navigate('/production/execution/monthly-task');
-                  }
-                } else {
-                  navigate('/production/execution/monthly-task');
-                }
+                navigate('/production/execution/monthly-task');
               }}>取消</Button>
               <Button variant="outline" size="sm" className="text-[#409eff] border-[#409eff] hover:bg-blue-50" onClick={() => alert('保存成功')}>保存</Button>
               <Button variant="primary" size="sm" disabled={taskDrafts.length === 0} onClick={() => alert('提交成功')}>提交</Button>
@@ -429,50 +582,146 @@ export default function MonthlyTaskBuilder() {
           </div>
 
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* 基础信息区域 - 移至顶部 */}
+            {/* 基础信息区域 - 移至顶部并且紧凑化，支持折叠展开 */}
             <div className="mb-4 shrink-0 px-1">
-              <div className="border border-[#e4e7ed] rounded-lg overflow-hidden bg-white">
-                <div className="bg-[#fafafa] border-b border-[#e4e7ed] px-4 py-2.5 flex items-center shrink-0">
-                  <div className="w-1 h-4 bg-[#409eff] rounded-sm mr-2"></div>
-                  <span className="text-sm font-bold text-[#303133]">基础信息</span>
+              <div className="border border-[#e4e7ed] rounded-lg overflow-hidden bg-white shadow-sm transition-all duration-300">
+                <div 
+                  className="bg-[#fafafa] border-b border-[#e4e7ed] px-4 py-2 flex justify-between items-center shrink-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => setIsBaseInfoExpanded(!isBaseInfoExpanded)}
+                >
+                  <div className="flex items-center">
+                    <div className="w-1 h-3.5 bg-[#409eff] rounded-sm mr-2"></div>
+                    <span className="text-[13px] font-bold text-[#303133]">基础信息</span>
+                  </div>
+                  <button className="text-gray-400 hover:text-[#409eff] transition-colors flex items-center text-[12px] gap-1">
+                    {isBaseInfoExpanded ? (
+                      <>收起 <ChevronDown className="w-4 h-4 ml-0.5" /></>
+                    ) : (
+                      <>展开更多 <ChevronRight className="w-4 h-4 ml-0.5" /></>
+                    )}
+                  </button>
                 </div>
-                <div className="p-4 bg-white">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="space-y-1.5">
+                
+                <div className="p-3 bg-white">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-1">
                       <label className="text-[12px] font-medium text-gray-500 ml-1 flex items-center">
                         所属月份 <span className="text-red-500 ml-1 font-bold">*</span>
                       </label>
                       <select 
                         value={baseInfo.month} 
                         onChange={(e) => handleMonthChange(Number(e.target.value))}
-                        className="flex h-9 w-full rounded-md border border-[#e4e7ed] bg-white px-3 py-1 text-[13px] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#409eff]"
+                        className="flex h-8 w-full rounded border border-[#e4e7ed] bg-white px-2 py-1 text-[12px] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#409eff]"
                       >
                         {[...Array(12)].map((_, i) => (
                           <option key={i + 1} value={i + 1}>{i + 1}月</option>
                         ))}
                       </select>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <label className="text-[12px] font-medium text-gray-500 ml-1">月度生产任务名称</label>
                       <Input 
                         value={baseInfo.taskName ?? ''} 
                         readOnly
-                        className="h-9 bg-[#f5f7fa] border-[#e4e7ed] text-gray-500 text-[13px] font-medium" 
+                        className="h-8 bg-[#f5f7fa] border-[#e4e7ed] text-gray-500 text-[12px] font-medium" 
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-medium text-gray-500 ml-1">创建人</label>
-                      <div className="flex h-9 items-center px-3 border border-[#e4e7ed] rounded-md bg-[#f5f7fa] text-[#606266] text-[13px]">
-                        {baseInfo.creator}
+                    <div className="space-y-1">
+                      <label className="text-[12px] font-medium text-gray-500 ml-1 flex items-center">
+                        再造原料排班 <span className="text-red-500 ml-1 font-bold">*</span>
+                      </label>
+                      <select 
+                        value={baseInfo.reconScheduleNo} 
+                        onChange={(e) => setBaseInfo({...baseInfo, reconScheduleNo: e.target.value, stemScheduleNo: e.target.value})}
+                        className="flex h-8 w-full rounded border border-[#e4e7ed] bg-white px-2 py-1 text-[12px] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#409eff]"
+                      >
+                        <option value="">请选择排班表</option>
+                        {mockScheduleBasicInfo
+                          .filter(s => s.productionLine === '再造原料' && s.status === '生效中')
+                          .map(s => <option key={s.scheduleCode} value={s.scheduleCode}>{s.scheduleCode} ({s.scheduleDateRange})</option>)
+                        }
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[12px] font-medium text-gray-500 ml-1 flex items-center">
+                        香精香料排班 <span className="text-red-500 ml-1 font-bold">*</span>
+                      </label>
+                      <select 
+                        value={baseInfo.flavorScheduleNo} 
+                        onChange={(e) => setBaseInfo({...baseInfo, flavorScheduleNo: e.target.value})}
+                        className="flex h-8 w-full rounded border border-[#e4e7ed] bg-white px-2 py-1 text-[12px] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#409eff]"
+                      >
+                        <option value="">请选择排班表</option>
+                        {mockScheduleBasicInfo
+                          .filter(s => s.productionLine === '香精香料' && s.status === '生效中')
+                          .map(s => <option key={s.scheduleCode} value={s.scheduleCode}>{s.scheduleCode} ({s.scheduleDateRange})</option>)
+                        }
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* 折叠区 */}
+                  {isBaseInfoExpanded && (
+                  <div className="mt-3 pt-3 border-t border-dashed border-[#e4e7ed]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">创建人</label>
+                        <div className="flex h-8 items-center px-2 border border-[#e4e7ed] rounded bg-[#f5f7fa] text-[#606266] text-[12px]">
+                          {baseInfo.creator}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">创建时间</label>
+                        <div className="flex h-8 items-center px-2 border border-[#e4e7ed] rounded bg-[#f5f7fa] text-[#606266] text-[12px]">
+                          {baseInfo.createTime}
+                        </div>
+                      </div>
+                      <div className="space-y-1 col-span-2">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">备注</label>
+                        <Input 
+                          value={baseInfo.remarks}
+                          onChange={(e) => setBaseInfo({...baseInfo, remarks: e.target.value})}
+                          className="h-8 border-[#e4e7ed] text-gray-700 text-[12px]" 
+                        />
                       </div>
                     </div>
-                    <div className="space-y-1.5 text-nowrap">
-                      <label className="text-[12px] font-medium text-gray-500 ml-1">创建时间</label>
-                      <div className="flex h-9 items-center px-3 border border-[#e4e7ed] rounded-md bg-[#f5f7fa] text-[#606266] text-[12px]">
-                        {baseInfo.createTime}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">配合事项-技改装备处</label>
+                        <Input 
+                          value={baseInfo.cooperationEquipment}
+                          onChange={(e) => setBaseInfo({...baseInfo, cooperationEquipment: e.target.value})}
+                          className="h-8 border-[#e4e7ed] text-gray-700 text-[12px]" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">配合事项-办公室</label>
+                        <Input 
+                          value={baseInfo.cooperationOffice}
+                          onChange={(e) => setBaseInfo({...baseInfo, cooperationOffice: e.target.value})}
+                          className="h-8 border-[#e4e7ed] text-gray-700 text-[12px]" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">配合事项-技术中心</label>
+                        <Input 
+                          value={baseInfo.cooperationTechnology}
+                          onChange={(e) => setBaseInfo({...baseInfo, cooperationTechnology: e.target.value})}
+                          className="h-8 border-[#e4e7ed] text-gray-700 text-[12px]" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-gray-500 ml-1">配合事项-营销物资处</label>
+                        <Input 
+                          value={baseInfo.cooperationSales}
+                          onChange={(e) => setBaseInfo({...baseInfo, cooperationSales: e.target.value})}
+                          className="h-8 border-[#e4e7ed] text-gray-700 text-[12px]" 
+                        />
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -683,20 +932,6 @@ export default function MonthlyTaskBuilder() {
                     <div className="w-1.5 h-4 bg-emerald-500 rounded-sm mr-2"></div>
                     <h3 className="font-bold text-emerald-900 text-sm">再造原料</h3>
                   </div>
-                  <div className="flex items-center text-xs text-slate-600 space-x-2">
-                    <span>关联排班表:</span>
-                    <select 
-                      value={formConfig.reconSchedulePlan} 
-                      onChange={(e) => setFormConfig({...formConfig, reconSchedulePlan: e.target.value})} 
-                      className="border border-slate-300 rounded px-2 py-1 w-56 focus:border-emerald-500 outline-none bg-white transition-colors text-xs"
-                    >
-                      <option value="">暂不关联</option>
-                      {mockScheduleBasicInfo
-                        .filter(s => s.productionLine === '再造原料' && s.status === '生效中')
-                        .map(s => <option key={s.scheduleCode} value={s.scheduleCode}>{s.scheduleCode} ({s.scheduleDateRange})</option>)
-                      }
-                    </select>
-                  </div>
                 </div>
                 
                 <table className="w-full text-sm text-left border-collapse">
@@ -710,7 +945,6 @@ export default function MonthlyTaskBuilder() {
                       <th className="py-2.5 px-3 font-medium">生产类型</th>
                       <th className="py-2.5 px-3 font-medium w-24">产量（吨）</th>
                       <th className="py-2.5 px-3 font-medium w-32">完成日期</th>
-                      <th className="py-2.5 px-3 font-medium w-32">完成日期</th>
                       <th className="py-2.5 px-3 font-medium w-12 text-center">操作</th>
                     </tr>
                   </thead>
@@ -719,22 +953,40 @@ export default function MonthlyTaskBuilder() {
                       const isExpanded = expandedTaskIds.has(task.taskId);
                       return (
                       <React.Fragment key={task.taskId}>
-                        <tr className="bg-white hover:bg-emerald-50/30 group">
-                          <td className="py-3 px-3 text-center border-r border-slate-50">
+                        <tr 
+                          className={`bg-white hover:bg-emerald-50/30 group cursor-pointer transition-all ${draggedTaskId === task.taskId ? 'opacity-50' : ''} ${dragOverTaskId === task.taskId ? 'border-t-2 border-emerald-500' : ''}`} 
+                          onClick={() => toggleTaskExpand(task.taskId)}
+                          draggable
+                          onDragStart={(e) => handleTaskDragStart(e, task.taskId)}
+                          onDragOver={(e) => handleTaskDragOver(e, task.taskId)}
+                          onDrop={(e) => handleTaskDrop(e, task.taskId, t => getTaskCategory(t.type, t.subType, t.productName)==='recon')}
+                          onDragEnd={handleTaskDragEnd}
+                        >
+                          <td className="py-3 px-3 text-center border-r border-slate-50 cursor-grab active:cursor-grabbing" onClick={e => e.stopPropagation()}>
                             <div className="flex flex-col items-center justify-center space-y-0.5">
-                              <button onClick={(e) => { e.stopPropagation(); handleSortInGroup(task.taskId, 'up', t => getTaskCategory(t.type, t.subType, t.productName)==='recon'); }} className="text-slate-300 hover:text-emerald-600 disabled:opacity-0"><ArrowUp className="w-3 h-3"/></button>
                               <span className="font-mono font-medium text-slate-700 text-xs">{idx + 1}</span>
-                              <button onClick={(e) => { e.stopPropagation(); handleSortInGroup(task.taskId, 'down', t => getTaskCategory(t.type, t.subType, t.productName)==='recon'); }} className="text-slate-300 hover:text-emerald-600 disabled:opacity-0"><ArrowDown className="w-3 h-3"/></button>
                             </div>
                           </td>
                           <td className="py-3 px-3 text-xs text-slate-700 whitespace-nowrap">
                             <div className="flex items-center">
+                              {task.flavorDetails && task.flavorDetails.length > 0 && (
+                                isExpanded ? <ChevronDown className="w-4 h-4 mr-1 text-slate-400" /> : <ChevronRight className="w-4 h-4 mr-1 text-slate-400" />
+                              )}
                               {task.type}
                             </div>
                           </td>
                           <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">
                             <div className="flex items-center">
                               {task.productName}
+                              {task.flavorDetails && task.flavorDetails.length > 1 ? (
+                                <span className="ml-2 px-1.5 py-0.5 bg-orange-50 text-orange-500 text-[10px] rounded border border-orange-100 font-medium whitespace-nowrap">
+                                  合并 {task.flavorDetails.length} 项需求
+                                </span>
+                              ) : (
+                                <span className="ml-2 px-1.5 py-0.5 bg-gray-50 text-gray-400 text-[10px] rounded border border-gray-100 font-medium whitespace-nowrap">
+                                  单项需求
+                                </span>
+                              )}
                               {task.hasBlend && (
                                 <div className="relative group/tooltip ml-2 inline-flex">
                                   <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 text-[10px] rounded border border-amber-200 cursor-help font-bold">
@@ -766,9 +1018,67 @@ export default function MonthlyTaskBuilder() {
                             <input type="date" value={task.deadline || ''} onChange={(e) => { const nt = [...taskDrafts]; const t = nt.find(t=>t.taskId===task.taskId); if(t) t.deadline = e.target.value; setTaskDrafts(nt); }} className="w-28 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-sm focus:bg-white focus:border-emerald-500 outline-none transition-colors" />
                           </td>
                           <td className="py-3 px-3 text-center" onClick={e => e.stopPropagation()}>
-                             <button onClick={() => handleReturnToPlan(task)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"><ArrowLeft className="w-4 h-4 mx-auto"/></button>
+                             <button onClick={() => handleReturnToPlan(task)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="退回计划池"><ArrowLeft className="w-4 h-4 mx-auto"/></button>
                           </td>
                         </tr>
+                        {isExpanded && task.flavorDetails && task.flavorDetails.length > 0 && (
+                          <tr>
+                            <td colSpan={10} className="p-0 border-b border-slate-100 bg-slate-50/50">
+                              <div className="py-3 pr-4 pl-12 bg-emerald-50/20 border-l-[3px] border-l-emerald-400">
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs text-left whitespace-nowrap min-w-max">
+                                    <thead className="text-slate-500">
+                                      <tr>
+                                        <th className="py-2 px-2 font-medium">产品类型</th>
+                                        <th className="py-2 px-2 font-medium">生产类型</th>
+                                        <th className="py-2 px-2 font-medium">产品名称</th>
+                                        <th className="py-2 px-2 font-medium">产品编号</th>
+                                        <th className="py-2 px-2 font-medium">客户名称</th>
+                                        <th className="py-2 px-2 font-medium">牌号</th>
+                                        <th className="py-2 px-2 font-medium">分牌号</th>
+                                        <th className="py-2 px-2 font-medium">规格</th>
+                                        <th className="py-2 px-2 font-medium text-right">需求量</th>
+                                        <th className="py-2 px-2 font-medium">单位</th>
+                                        <th className="py-2 px-2 font-medium">期望完成时间</th>
+                                        <th className="py-2 px-2 font-medium">到货时间</th>
+                                        <th className="py-2 px-2 font-medium">到货地点</th>
+                                        <th className="py-2 px-2 font-medium">申请人</th>
+                                        <th className="py-2 px-2 font-medium">申请人部门</th>
+                                        <th className="py-2 px-2 font-medium text-center sticky right-0 bg-emerald-50/20">操作</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100/50">
+                                      {task.flavorDetails.map(detail => (
+                                        <tr key={detail.id} className="hover:bg-white/60 transition-colors">
+                                          <td className="py-2 px-2 text-slate-700">{detail.productType || detail.productCategory || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productionType || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productName || detail.name || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productCode || detail.code || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.customerName || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.brand || detail.brandName || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.subBrand || detail.subBrandGrade || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.specification || detail.spec || '-'}</td>
+                                          <td className="py-2 px-2 text-right font-medium text-slate-700">{detail.requirementAmount || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.unit || '吨'}</td>
+                                          <td className="py-2 px-2 text-slate-600">{detail.expectedCompletionDate || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-600">{detail.arrivalTime || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.arrivalLocation || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.applicant || detail.applicantId || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.applicantDepartment || detail.applicantDepartmentId || '-'}</td>
+                                          <td className="py-2 px-2 text-center sticky right-0 bg-emerald-50/20">
+                                            <button onClick={(e) => handleDeleteFlavorDetail(task, detail.id, e)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-neutral-100 transition-colors">
+                                              <ArrowLeft className="w-3.5 h-3.5" title="退回计划池"/>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       </React.Fragment>
                       );
                     })}
@@ -784,20 +1094,6 @@ export default function MonthlyTaskBuilder() {
                   <div className="flex items-center">
                     <div className="w-1.5 h-4 bg-indigo-500 rounded-sm mr-2"></div>
                     <h3 className="font-bold text-indigo-900 text-sm">香精香料</h3>
-                  </div>
-                  <div className="flex items-center text-xs text-slate-600 space-x-2">
-                    <span>关联排班表:</span>
-                    <select 
-                      value={formConfig.flavorSchedulePlan} 
-                      onChange={(e) => setFormConfig({...formConfig, flavorSchedulePlan: e.target.value})} 
-                      className="border border-slate-300 rounded px-2 py-1 w-56 focus:border-indigo-500 outline-none bg-white transition-colors text-xs"
-                    >
-                      <option value="">暂不关联</option>
-                      {mockScheduleBasicInfo
-                        .filter(s => s.productionLine === '香精香料' && s.status === '生效中')
-                        .map(s => <option key={s.scheduleCode} value={s.scheduleCode}>{s.scheduleCode} ({s.scheduleDateRange})</option>)
-                      }
-                    </select>
                   </div>
                 </div>
                 
@@ -821,12 +1117,18 @@ export default function MonthlyTaskBuilder() {
                       const isExpanded = expandedTaskIds.has(task.taskId);
                       return (
                       <React.Fragment key={task.taskId}>
-                        <tr className="bg-white hover:bg-indigo-50/30 group cursor-pointer" onClick={() => toggleTaskExpand(task.taskId)}>
-                          <td className="py-3 px-3 text-center border-r border-slate-50" onClick={e => e.stopPropagation()}>
+                        <tr 
+                          className={`bg-white hover:bg-indigo-50/30 group cursor-pointer transition-all ${draggedTaskId === task.taskId ? 'opacity-50' : ''} ${dragOverTaskId === task.taskId ? 'border-t-2 border-indigo-500' : ''}`} 
+                          onClick={() => toggleTaskExpand(task.taskId)}
+                          draggable
+                          onDragStart={(e) => handleTaskDragStart(e, task.taskId)}
+                          onDragOver={(e) => handleTaskDragOver(e, task.taskId)}
+                          onDrop={(e) => handleTaskDrop(e, task.taskId, t => getTaskCategory(t.type, t.subType, t.productName)==='flavor')}
+                          onDragEnd={handleTaskDragEnd}
+                        >
+                          <td className="py-3 px-3 text-center border-r border-slate-50 cursor-grab active:cursor-grabbing" onClick={e => e.stopPropagation()}>
                             <div className="flex flex-col items-center justify-center space-y-0.5">
-                              <button onClick={() => handleSortInGroup(task.taskId, 'up', t => getTaskCategory(t.type, t.subType, t.productName)==='flavor')} className="text-slate-300 hover:text-indigo-600 disabled:opacity-0"><ArrowUp className="w-3 h-3"/></button>
                               <span className="font-mono font-medium text-slate-700 text-xs">{idx + 1}</span>
-                              <button onClick={() => handleSortInGroup(task.taskId, 'down', t => getTaskCategory(t.type, t.subType, t.productName)==='flavor')} className="text-slate-300 hover:text-indigo-600 disabled:opacity-0"><ArrowDown className="w-3 h-3"/></button>
                             </div>
                           </td>
                           <td className="py-3 px-3 text-xs text-slate-700 whitespace-nowrap">
@@ -889,34 +1191,56 @@ export default function MonthlyTaskBuilder() {
                           <tr>
                             <td colSpan={11} className="p-0 border-b border-slate-100 bg-slate-50/50">
                               <div className="py-3 pr-4 pl-12 bg-indigo-50/20 border-l-[3px] border-l-indigo-400">
-                                <table className="w-full text-xs text-left">
-                                  <thead className="text-slate-500">
-                                    <tr>
-                                      <th className="py-2 px-2 font-medium">需求编号</th>
-                                      <th className="py-2 px-2 font-medium">客户名称</th>
-                                      <th className="py-2 px-2 font-medium">产品明细型号</th>
-                                      <th className="py-2 px-2 font-medium text-right">需求量(吨)</th>
-                                      <th className="py-2 px-2 font-medium">期望完成日期</th>
-                                      <th className="py-2 px-2 font-medium text-center w-16">操作</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-100/50">
-                                    {task.flavorDetails.map(detail => (
-                                      <tr key={detail.id} className="hover:bg-white/60 transition-colors">
-                                        <td className="py-2 px-2 font-mono text-slate-500">{detail.id}</td>
-                                        <td className="py-2 px-2 text-slate-700">{detail.customerName}</td>
-                                        <td className="py-2 px-2 text-slate-700">{detail.subBrandGrade}</td>
-                                        <td className="py-2 px-2 text-right font-medium text-slate-700">{detail.requirementAmount}</td>
-                                        <td className="py-2 px-2 text-slate-600">{detail.expectedCompletionDate}</td>
-                                        <td className="py-2 px-2 text-center">
-                                          <button onClick={(e) => handleDeleteFlavorDetail(task, detail.id, e)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-neutral-100 transition-colors">
-                                            <ArrowLeft className="w-3.5 h-3.5" title="退回计划池"/>
-                                          </button>
-                                        </td>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs text-left whitespace-nowrap min-w-max">
+                                    <thead className="text-slate-500">
+                                      <tr>
+                                        <th className="py-2 px-2 font-medium">产品类型</th>
+                                        <th className="py-2 px-2 font-medium">生产类型</th>
+                                        <th className="py-2 px-2 font-medium">产品名称</th>
+                                        <th className="py-2 px-2 font-medium">产品编号</th>
+                                        <th className="py-2 px-2 font-medium">客户名称</th>
+                                        <th className="py-2 px-2 font-medium">牌号</th>
+                                        <th className="py-2 px-2 font-medium">分牌号</th>
+                                        <th className="py-2 px-2 font-medium">规格</th>
+                                        <th className="py-2 px-2 font-medium text-right">需求量</th>
+                                        <th className="py-2 px-2 font-medium">单位</th>
+                                        <th className="py-2 px-2 font-medium">期望完成时间</th>
+                                        <th className="py-2 px-2 font-medium">到货时间</th>
+                                        <th className="py-2 px-2 font-medium">到货地点</th>
+                                        <th className="py-2 px-2 font-medium">申请人</th>
+                                        <th className="py-2 px-2 font-medium">申请人部门</th>
+                                        <th className="py-2 px-2 font-medium text-center sticky right-0 bg-indigo-50/20">操作</th>
                                       </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100/50">
+                                      {task.flavorDetails.map(detail => (
+                                        <tr key={detail.id} className="hover:bg-white/60 transition-colors">
+                                          <td className="py-2 px-2 text-slate-700">{detail.productType || detail.productCategory || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productionType || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productName || detail.name || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productCode || detail.code || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.customerName || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.brand || detail.brandName || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.subBrand || detail.subBrandGrade || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.specification || detail.spec || '-'}</td>
+                                          <td className="py-2 px-2 text-right font-medium text-slate-700">{detail.requirementAmount || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.unit || '吨'}</td>
+                                          <td className="py-2 px-2 text-slate-600">{detail.expectedCompletionDate || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-600">{detail.arrivalTime || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.arrivalLocation || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.applicant || detail.applicantId || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.applicantDepartment || detail.applicantDepartmentId || '-'}</td>
+                                          <td className="py-2 px-2 text-center sticky right-0 bg-indigo-50/20">
+                                            <button onClick={(e) => handleDeleteFlavorDetail(task, detail.id, e)} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-neutral-100 transition-colors">
+                                              <ArrowLeft className="w-3.5 h-3.5" title="退回计划池"/>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
                             </td>
                           </tr>
@@ -958,8 +1282,8 @@ export default function MonthlyTaskBuilder() {
                       const isExpanded = expandedTaskIds.has(task.taskId);
                       return (
                       <React.Fragment key={task.taskId}>
-                        <tr className="bg-white hover:bg-amber-50/30 group">
-                          <td className="py-3 px-3 text-center border-r border-slate-50">
+                        <tr className="bg-white hover:bg-amber-50/30 group cursor-pointer" onClick={() => toggleTaskExpand(task.taskId)}>
+                          <td className="py-3 px-3 text-center border-r border-slate-50" onClick={e => e.stopPropagation()}>
                             <span className="font-mono font-medium text-slate-700 text-xs">{idx + 1}</span>
                           </td>
                           <td className="py-3 px-3 text-xs font-mono text-slate-500 whitespace-nowrap">
@@ -967,12 +1291,24 @@ export default function MonthlyTaskBuilder() {
                           </td>
                           <td className="py-3 px-3 text-xs text-slate-700 whitespace-nowrap">
                             <div className="flex items-center">
+                              {task.flavorDetails && task.flavorDetails.length > 0 && (
+                                isExpanded ? <ChevronDown className="w-4 h-4 mr-1 text-slate-400" /> : <ChevronRight className="w-4 h-4 mr-1 text-slate-400" />
+                              )}
                               {task.type}
                             </div>
                           </td>
                           <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">
                             <div className="flex items-center">
                               {task.productName}
+                              {task.flavorDetails && task.flavorDetails.length > 1 ? (
+                                <span className="ml-2 px-1.5 py-0.5 bg-orange-50 text-orange-500 text-[10px] rounded border border-orange-100 font-medium whitespace-nowrap">
+                                  合并 {task.flavorDetails.length} 项需求
+                                </span>
+                              ) : (
+                                <span className="ml-2 px-1.5 py-0.5 bg-gray-50 text-gray-400 text-[10px] rounded border border-gray-100 font-medium whitespace-nowrap">
+                                  单项需求
+                                </span>
+                              )}
                               {task.hasBlend && (
                                 <div className="relative group/tooltip ml-2 inline-flex">
                                   <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 text-[10px] rounded border border-amber-200 cursor-help font-bold">
@@ -998,16 +1334,68 @@ export default function MonthlyTaskBuilder() {
                           <td className="py-3 px-3 text-xs text-slate-700 whitespace-nowrap">{task.productName}</td>
                           <td className="py-3 px-3 font-medium text-slate-700 text-xs whitespace-nowrap">{task.subType}</td>
                           <td className="py-3 px-3">
-                            <span className="text-sm font-medium text-slate-800">{task.amount}</span>
-                            <span className="text-xs text-slate-500 ml-1">{task.subType?.includes('醇化') ? '箱' : '吨'}</span>
+                            <span className="text-sm font-medium text-slate-800">{Number(task.amount).toFixed(2)}</span>
+                            <span className="text-xs text-slate-500 ml-1">{task.unit || (task.subType?.includes('醇化') ? '箱' : '吨')}</span>
                           </td>
                           <td className="py-3 px-3" onClick={e => e.stopPropagation()}>
-                            <input type="date" value={task.deadline || ''} onChange={(e) => { const nt = [...taskDrafts]; const t = nt.find(t=>t.taskId===task.taskId); if(t) t.deadline = e.target.value; setTaskDrafts(nt); }} className="w-28 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600 focus:bg-white focus:border-amber-500 outline-none transition-colors" />
+                            <input type="date" disabled={task.source === '自动生成'} value={task.deadline || ''} onChange={(e) => { const nt = [...taskDrafts]; const t = nt.find(t=>t.taskId===task.taskId); if(t) t.deadline = e.target.value; setTaskDrafts(nt); }} className="w-28 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600 focus:bg-white focus:border-amber-500 outline-none transition-colors disabled:opacity-50 disabled:bg-gray-100" />
                           </td>
                           <td className="py-3 px-3 text-center" onClick={e => e.stopPropagation()}>
-                             <button onClick={() => handleReturnToPlan(task)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"><ArrowLeft className="w-4 h-4 mx-auto"/></button>
+                             {task.source !== '自动生成' && <button onClick={() => handleReturnToPlan(task)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="退回计划池"><ArrowLeft className="w-4 h-4 mx-auto"/></button>}
                           </td>
                         </tr>
+                        {isExpanded && task.flavorDetails && task.flavorDetails.length > 0 && (
+                          <tr>
+                            <td colSpan={10} className="p-0 border-b border-slate-100 bg-slate-50/50">
+                              <div className="py-3 pr-4 pl-12 bg-amber-50/20 border-l-[3px] border-l-amber-400">
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs text-left whitespace-nowrap min-w-max">
+                                    <thead className="text-slate-500">
+                                      <tr>
+                                        <th className="py-2 px-2 font-medium">产品类型</th>
+                                        <th className="py-2 px-2 font-medium">生产类型</th>
+                                        <th className="py-2 px-2 font-medium">产品名称</th>
+                                        <th className="py-2 px-2 font-medium">产品编号</th>
+                                        <th className="py-2 px-2 font-medium">客户名称</th>
+                                        <th className="py-2 px-2 font-medium">牌号</th>
+                                        <th className="py-2 px-2 font-medium">分牌号</th>
+                                        <th className="py-2 px-2 font-medium">规格</th>
+                                        <th className="py-2 px-2 font-medium text-right">需求量</th>
+                                        <th className="py-2 px-2 font-medium">单位</th>
+                                        <th className="py-2 px-2 font-medium">期望完成时间</th>
+                                        <th className="py-2 px-2 font-medium">到货时间</th>
+                                        <th className="py-2 px-2 font-medium">到货地点</th>
+                                        <th className="py-2 px-2 font-medium">申请人</th>
+                                        <th className="py-2 px-2 font-medium">申请人部门</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100/50">
+                                      {task.flavorDetails.map(detail => (
+                                        <tr key={detail.id} className="hover:bg-white/60 transition-colors">
+                                          <td className="py-2 px-2 text-slate-700">{detail.productType || detail.productCategory || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productionType || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productName || detail.name || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.productCode || detail.code || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.customerName || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.brand || detail.brandName || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.subBrand || detail.subBrandGrade || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.specification || detail.spec || '-'}</td>
+                                          <td className="py-2 px-2 text-right font-medium text-slate-700">{detail.requirementAmount || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.unit || '吨'}</td>
+                                          <td className="py-2 px-2 text-slate-600">{detail.expectedCompletionDate || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-600">{detail.arrivalTime || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.arrivalLocation || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.applicant || detail.applicantId || '-'}</td>
+                                          <td className="py-2 px-2 text-slate-700">{detail.applicantDepartment || detail.applicantDepartmentId || '-'}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       </React.Fragment>
                       );
                     })}
@@ -1031,21 +1419,47 @@ export default function MonthlyTaskBuilder() {
               <h3 className="font-semibold text-sm">工艺参数前置确认：触发回掺</h3>
             </div>
             <div className="p-5 text-sm space-y-4">
-              <p className="text-gray-600 leading-relaxed">
-                牌号 <strong>{blendModal.pendingPlan?.productName}</strong> 存在回掺记录。请确认回掺参数：
-              </p>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">回掺比例</label>
-                <input type="text" value={blendModal.ratio ?? ''} onChange={(e)=>setBlendModal({...blendModal, ratio: e.target.value})} className="w-full border border-slate-300 rounded px-3 py-1.5 focus:border-[#1890ff] outline-none" />
+              <div className="text-gray-600 leading-relaxed border-b border-gray-100 pb-3">
+                <span>牌号 <strong className="text-gray-800">{blendModal.pendingPlan?.productName}</strong> 存在回掺记录：单号 <a href="#" className="text-[#409eff] hover:underline whitespace-nowrap font-mono ml-1">SY-JC-20260428-0012</a></span>
               </div>
-              <label className="flex items-center mt-2 cursor-pointer bg-slate-50 p-2 rounded border border-[#e4e7ed]">
-                <input type="checkbox" checked={blendModal.deduct} onChange={(e)=>setBlendModal({...blendModal, deduct: e.target.checked})} className="w-4 h-4 text-[#1890ff] rounded border-slate-300 focus:ring-[#1890ff]" />
-                <span className="ml-2 text-gray-700 text-xs font-medium">扣除回掺量 (核减原料请领单据)</span>
-              </label>
+              
+              <div className="flex gap-6 items-center py-1">
+                <label className="flex items-center cursor-pointer gap-2">
+                  <input type="radio" name="willBlend" checked={blendModal.willBlend} onChange={() => setBlendModal({...blendModal, willBlend: true})} className="w-4 h-4 text-[#409eff] focus:ring-[#409eff]" />
+                  <span className="text-sm font-medium text-gray-700">同意回掺</span>
+                </label>
+                <label className="flex items-center cursor-pointer gap-2">
+                  <input type="radio" name="willBlend" checked={!blendModal.willBlend} onChange={() => setBlendModal({...blendModal, willBlend: false})} className="w-4 h-4 text-[#f56c6c] focus:ring-[#f56c6c]" />
+                  <span className="text-sm font-medium text-gray-700">不进行回掺</span>
+                </label>
+              </div>
+
+              {blendModal.willBlend && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-50 px-3 py-2 flex flex-col rounded border border-[#e4e7ed]">
+                      <span className="text-xs text-gray-500 mb-1">回掺比例</span>
+                      <span className="font-medium text-sm text-slate-800">{blendModal.ratio ?? ''}</span>
+                    </div>
+                    <div className="bg-slate-50 px-3 py-2 flex flex-col rounded border border-[#e4e7ed]">
+                      <span className="text-xs text-gray-500 mb-1">回掺数量 (吨)</span>
+                      <span className="font-medium text-sm text-slate-800">{blendModal.pendingPlan ? (Number(blendModal.pendingPlan.requirementAmount || 0) * (parseFloat(blendModal.ratio.replace('%', '') || '0') / 100)).toFixed(2) : '0.00'}</span>
+                    </div>
+                  </div>
+                  <div className="bg-[#fff8e6] border border-[#ffe58f] px-3 py-2.5 rounded text-xs text-[#d48806] flex items-center justify-between">
+                    <span><strong>{blendModal.pendingPlan?.productName}</strong> 回掺库库存数：</span>
+                    <span className="font-mono font-medium text-sm">{(Number(blendModal.pendingPlan?.requirementAmount || 100) * 1.5).toFixed(2)} 吨</span>
+                  </div>
+                  <div className="flex items-center bg-slate-50 px-3 py-2.5 rounded border border-[#e4e7ed]">
+                    <span className="text-[#409eff] mr-1.5 font-bold">✓</span>
+                    <span className="text-gray-700 text-xs font-medium">已确认扣除回掺量 (核减相应的领料单生成)</span>
+                  </div>
+                </>
+              )}
             </div>
             <div className="px-5 py-3 border-t border-[#e4e7ed] bg-[#fafafa] flex justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={() => setBlendModal({ isOpen: false, pendingPlan: null, ratio: '5%', deduct: true })}>取消</Button>
-              <Button variant="primary" size="sm" onClick={() => executeMoveToTask(blendModal.pendingPlan, { ratio: blendModal.ratio, deduct: blendModal.deduct })}>确认参数</Button>
+              <Button variant="outline" size="sm" onClick={() => setBlendModal({ isOpen: false, pendingPlan: null, ratio: '5%', deduct: true, willBlend: true })}>取消</Button>
+              <Button variant="primary" size="sm" onClick={() => executeMoveToTask(blendModal.pendingPlan, blendModal.willBlend ? { ratio: blendModal.ratio, deduct: blendModal.deduct } : null)}>确认参数</Button>
             </div>
           </div>
         </div>
@@ -1085,6 +1499,17 @@ export default function MonthlyTaskBuilder() {
         </div>
       )}
 
+      {/* Preview Modal */}
+      {isPreviewOpen && (
+        <MonthlyTaskPreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          baseInfo={baseInfo}
+          reconTasks={reconTasks}
+          flavorTasks={flavorTasks}
+          otherTasks={otherTasks}
+        />
+      )}
       </div>
     </div>
   );

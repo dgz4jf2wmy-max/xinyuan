@@ -13,6 +13,7 @@ export interface PlanItem {
   deadline: string;
   note?: string;
   target?: string;
+  flavorDetails?: any[];
 }
 
 export const initialReconPlans: PlanItem[] = [

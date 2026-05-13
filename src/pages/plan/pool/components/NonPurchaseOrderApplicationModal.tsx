@@ -125,7 +125,7 @@ export function NonPurchaseOrderApplicationModal({ isOpen, onClose, onSubmit, al
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="计划池入池申请 - 非采购订单需求"
+      title="计划池入池申请 - 非销售订单需求"
       maxWidth="full"
       className="md:max-w-[95vw]"
       footer={footer}

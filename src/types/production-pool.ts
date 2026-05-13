@@ -146,7 +146,7 @@ export interface PlanPoolPurchaseOrderDetail {
 export type ProductionPlanPoolApplication = PlanPoolPurchaseOrderDetail;
 
 /**
- * 2.1 计划池入池申请-基础信息（采购订单-基础信息）
+ * 2.1 计划池入池申请-基础信息（销售订单-基础信息）
  */
 export interface PlanPoolPurchaseOrderBase {
   id: string; // 唯一标识
@@ -160,7 +160,7 @@ export interface PlanPoolPurchaseOrderBase {
   /** 客户: 字符(50), 必填, 关联客户台账 */
   customer: string;
   
-  /** 业务员: 字符(20), 只读, 当前用户 */
+  /** 业务员: 字符(20), 必填, 默认值：当前用户 */
   salesperson: string;
   
   /** 部门: 字符(50), 只读, 当前用户所属部门 */
@@ -183,7 +183,7 @@ export interface PlanPoolPurchaseOrderBase {
 }
 
 /**
- * 2.2 计划池入池申请-非采购订单需求
+ * 2.2 计划池入池申请-非销售订单需求
  */
 export interface PlanPoolNonPurchaseOrder {
   id: string; // 唯一标识

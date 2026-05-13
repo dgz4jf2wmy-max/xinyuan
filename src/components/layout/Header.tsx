@@ -1,7 +1,8 @@
-import { Bell, Search, Maximize, Settings, UserCircle } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom';
+import { Bell, Search, Maximize, Settings, UserCircle, Smartphone } from 'lucide-react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { menuItems } from './Sidebar';
 import { mockMonthlyAgingPlans } from '../../data/plan/agingPlanData';
+import { mockMonthlyProductionTasks } from '../../data/production/execution/monthlyTaskData';
 
 const getRouteInfo = (pathname: string) => {
   if (pathname === '/') return { label: '首页' };
@@ -86,11 +87,18 @@ const getRouteInfo = (pathname: string) => {
     return { parent: '月度生产任务', label: '月度生产任务编制' };
   }
 
+  if (pathname.startsWith('/production/execution/monthly-task/detail/')) {
+    const id = pathname.split('/').pop();
+    const taskData = mockMonthlyProductionTasks.find(t => t.baseInfo.id === Number(id));
+    return { parent: '月度生产任务', label: taskData ? taskData.baseInfo.taskName : '月度生产任务详情' };
+  }
+
   return { label: '未知页面' };
 };
 
 export function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentRoute = getRouteInfo(location.pathname);
 
   return (
@@ -117,6 +125,13 @@ export function Header() {
         <div className="text-red-500 text-sm font-medium mr-4">
           本平台为互联网非涉密平台，严禁处理、传输国家秘密、工作秘密
         </div>
+        <button 
+          onClick={() => navigate('/mobile')}
+          className="text-gray-500 hover:text-blue-500 transition-colors"
+          title="移动端预览"
+        >
+          <Smartphone className="w-5 h-5" />
+        </button>
         <button className="text-gray-500 hover:text-gray-700">
           <Search className="w-5 h-5" />
         </button>
