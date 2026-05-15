@@ -5,6 +5,7 @@ import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
 import { Select } from '../../../../components/ui/select';
+import { Pagination } from '../../../../components/ui/pagination';
 import { mockTempBlendingRecords } from '../../../../data/production/execution/tempBlendingData';
 import { TemporaryBlendingApplication } from '../../../../types/production/execution/temporaryBlendingApplication';
 import { TempBlendingApplyModal } from './components/TempBlendingApplyModal';
@@ -126,22 +127,8 @@ export default function TempBlendingProcessPage() {
               </TableBody>
             </Table>
             
-            {/* 模拟分页器位置 */}
             <div className="mt-4 pt-2 mb-4">
-              <div className="flex items-center text-sm text-[#606266]">
-                共 {records.length} 条
-                <div className="ml-4 flex items-center gap-2">
-                  <Select 
-                    options={[
-                      { label: '10条/页', value: '10' },
-                      { label: '20条/页', value: '20' },
-                      { label: '50条/页', value: '50' }
-                    ]}
-                    defaultValue="10"
-                    className="w-[100px] h-8 bg-white text-xs border border-gray-300 rounded"
-                  />
-                </div>
-              </div>
+              <Pagination total={records.length} pageSize={10} current={1} onChange={() => {}} />
             </div>
           </div>
         </div>

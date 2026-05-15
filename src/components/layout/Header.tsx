@@ -35,6 +35,12 @@ const getRouteInfo = (pathname: string) => {
     '/plan/monthly/create': { parent: '计划管理', label: '新增月度产销计划' },
     '/plan/monthly/aging/create': { parent: '计划管理', label: '新增月度醇化计划' },
     '/production/scheduling/schedule/create': { parent: '班组排班表', label: '新建排班计划' },
+    '/production/statistics/report/daily-edit': { parent: '生产汇报', label: '生产日报编辑' },
+    '/production/statistics/report/daily-detail': { parent: '生产汇报', label: '生产日报详情' },
+    '/production/statistics/report/weekly-edit': { parent: '生产汇报', label: '生产周报编辑' },
+    '/production/statistics/report/weekly-detail': { parent: '生产汇报', label: '生产周报详情' },
+    '/production/statistics/report/monthly-edit': { parent: '生产汇报', label: '生产月报编辑' },
+    '/production/statistics/report/monthly-detail': { parent: '生产汇报', label: '生产月报详情' },
   };
   
   if (extraRouteMap[pathname]) return extraRouteMap[pathname];
@@ -81,6 +87,18 @@ const getRouteInfo = (pathname: string) => {
   
   if (pathname.startsWith('/production/scheduling/schedule/edit/')) {
     return { parent: '班组排班表', label: '班组排班调整' };
+  }
+
+  if (pathname.startsWith('/production/execution/temp-blending/detail/')) {
+    return { parent: '生产执行', label: '临时回掺申请详情' };
+  }
+
+  if (pathname.startsWith('/production/handover/log/foreman-detail/')) {
+    return { parent: '交接班日志', label: '工段长交接班报工详情' };
+  }
+
+  if (pathname.startsWith('/production/handover/log/operator-detail/')) {
+    return { parent: '交接班日志', label: '操作工交接班报工详情' };
   }
 
   if (pathname.startsWith('/production/execution/monthly-task/builder')) {

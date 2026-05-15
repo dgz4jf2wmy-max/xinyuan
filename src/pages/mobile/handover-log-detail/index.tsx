@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FileText, ListFilter } from 'lucide-react';
 import { getHandoverLogById, mockFeedRecords } from '../../../data/mobile/handoverLogDetailData';
 import { 
@@ -12,6 +12,9 @@ import {
 export default function MobileHandoverLogDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const mode = searchParams.get('mode');
   const logData = getHandoverLogById(Number(id));
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
 
@@ -34,7 +37,7 @@ export default function MobileHandoverLogDetail() {
         
         {/* ================= 1. 基础交接班日志信息 ================= */}
         <MobileDetailInfoCard 
-          title="交接班日志要素" 
+          title="基础信息" 
           icon={<FileText className="w-5 h-5" />}
         >
           <MobileDetailInfoField label="交接班日志名称" value={logData.logName} isFullWidth />
@@ -245,6 +248,25 @@ export default function MobileHandoverLogDetail() {
         <MobileDetailInfoField label="入库产量" value="0.00 吨/箱" />
         <MobileDetailInfoField label="完成日期" value="2026-05-12" />
       </MobileModal>
+
+      {mode === 'audit' && (
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 flex gap-3 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-20 mx-auto w-full pb-[calc(12px+env(safe-area-inset-bottom))]">
+          <button 
+            type="button"
+            className="flex-1 bg-white border border-[#409eff] text-[#409eff] active:bg-[#ecf5ff] text-[15px] font-medium py-2.5 rounded-lg transition-colors"
+            onClick={() => navigate(-1)}
+          >
+            驳回
+          </button>
+          <button 
+            type="button"
+            className="flex-1 bg-[#409eff] active:bg-[#66b1ff] text-white text-[15px] font-medium py-2.5 rounded-lg transition-colors"
+            onClick={() => navigate(-1)}
+          >
+            通过
+          </button>
+        </div>
+      )}
     </MobileDetailLayout>
   );
 }

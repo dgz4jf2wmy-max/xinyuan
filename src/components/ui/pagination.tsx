@@ -16,7 +16,7 @@ export function Pagination({ total, pageSize, current, onChange }: PaginationPro
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="flex items-center justify-start px-2 py-3 text-[13px] text-[#606266]">
+    <div className="flex items-center justify-end px-2 py-3 text-[13px] text-[#606266]">
       <div className="mr-4">
         共 {total} 条
       </div>

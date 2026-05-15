@@ -3,6 +3,8 @@ import { X, FileText, ClipboardList, PenTool, CheckCircle, Clock, Package } from
 import { Button } from '../../../../components/ui/button';
 import { cn } from '../../../../lib/utils';
 import { mockMonthlyTaskDetail } from '../../../../data/production/execution/monthlyTaskDetailData';
+import { mockShiftHandoverLogs } from '../../../../data/mobile/shiftHandoverLogData';
+import { mockForemanShiftHandoverData } from '../../../../data/mobile/foremanShiftHandoverData';
 import { mockTaskReportingData, ShiftLog } from '../../../../data/production/execution/taskReportingData';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../../components/ui/tabs';
@@ -16,8 +18,11 @@ interface TaskDetailDrawerProps {
 
 export default function TaskDetailDrawer({ isOpen, onClose, task }: TaskDetailDrawerProps) {
   const [activeTab, setActiveTab] = useState<'demand' | 'report'>('demand');
+  const [reportSubTab, setReportSubTab] = useState<'operator' | 'foreman'>('foreman');
   const [demandDetails, setDemandDetails] = useState<any[]>([]);
   const [shiftLogs, setShiftLogs] = useState<ShiftLog[]>([]);
+  const [operatorLogs, setOperatorLogs] = useState<any[]>([]);
+  const [foremanLogs, setForemanLogs] = useState<any[]>([]);
 
   useEffect(() => {
     if (task) {
@@ -85,6 +90,17 @@ export default function TaskDetailDrawer({ isOpen, onClose, task }: TaskDetailDr
       // Load shift logs if any
       const logs = mockTaskReportingData[task.taskNo]?.shiftLogs || [];
       setShiftLogs(logs);
+
+      // Make sure we have some mock data to show
+      let oLogs = mockShiftHandoverLogs.filter(l => l.taskNo === task.taskNo);
+      if (oLogs.length === 0) oLogs = mockShiftHandoverLogs;
+      
+      let fLogs = mockForemanShiftHandoverData.filter(l => l.productionTaskNo === task.taskNo);
+      if (fLogs.length === 0) fLogs = mockForemanShiftHandoverData;
+
+      setOperatorLogs(oLogs);
+      setForemanLogs(fLogs);
+
       setActiveTab('demand');
     }
   }, [task]);
@@ -285,48 +301,102 @@ export default function TaskDetailDrawer({ isOpen, onClose, task }: TaskDetailDr
                   </div>
                 </TabsContent>
   
-                <TabsContent value="report" className="mt-0">
-                  <div className="space-y-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-sm font-medium text-[#303133] flex items-center"><PenTool className="w-4 h-4 mr-1.5 text-[#909399]"/>报工记录</h4>
-                  <Button variant="outline" size="sm" className="h-7 text-xs border-[#409eff] text-[#409eff] hover:bg-[#ecf5ff]">新增报工</Button>
-                </div>
-  
-                {shiftLogs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-[#c0c4cc] bg-white rounded-lg border border-dashed border-[#dcdfe6]">
-                    <Clock className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-sm">暂无生产报工记录</span>
-                    <span className="text-xs mt-1">请在班次结束后填报实际产量</span>
+                <TabsContent value="report" className="mt-0 h-full flex flex-col">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex bg-[#f4f4f5] p-1 rounded-md">
+                      <button 
+                        className={cn(
+                          "px-4 py-1.5 text-sm font-medium rounded-sm transition-colors", 
+                          reportSubTab === 'foreman' ? "bg-white text-[#303133] shadow-sm" : "text-[#909399] hover:text-[#606266]"
+                        )}
+                        onClick={() => setReportSubTab('foreman')}
+                      >
+                        工段长交接班日志
+                      </button>
+                      <button 
+                        className={cn(
+                          "px-4 py-1.5 text-sm font-medium rounded-sm transition-colors", 
+                          reportSubTab === 'operator' ? "bg-white text-[#303133] shadow-sm" : "text-[#909399] hover:text-[#606266]"
+                        )}
+                        onClick={() => setReportSubTab('operator')}
+                      >
+                        操作工交接班日志
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <div className="relative border-l-2 border-[#e4e7ed] ml-3 pl-5 space-y-6">
-                    {shiftLogs.map((log, idx) => (
-                      <div key={idx} className="relative">
-                        {/* Timeline dot */}
-                        <div className="absolute -left-[27px] top-1">
-                          <CheckCircle className="w-4 h-4 text-[#67c23a] bg-white rounded-full" />
-                        </div>
-                        <div className="bg-white rounded-md border border-[#e4e7ed] p-3">
-                          <div className="flex justify-between items-start mb-2 border-b border-[#fafafa] pb-2">
-                            <div>
-                              <div className="text-sm font-bold text-[#303133]">{log.shift}</div>
-                              <div className="text-xs text-[#909399] mt-0.5">填报时间: {log.reportTime}</div>
-                            </div>
-                            <div className="text-right">
-                               <div className="text-sm font-medium text-[#67c23a]">产出: +{log.productionQuantity} {log.unit}</div>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs text-[#606266]">
-                             <div><span className="text-[#909399] mr-2">值班长:</span>{log.shiftManager}</div>
-                             <div><span className="text-[#909399] mr-2">填报人:</span>{log.reporter}</div>
-                             <div className="col-span-2"><span className="text-[#909399] mr-2">设备状态:</span>{log.equipmentStatus}</div>
-                             <div className="col-span-2"><span className="text-[#909399] mr-2">备注情况:</span>{log.remarks || '无'}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+
+                  <div className="flex-1 bg-white border border-[#e4e7ed] rounded-md overflow-hidden flex flex-col">
+                    <div className="flex-1 overflow-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-[#fafafa] hover:bg-[#fafafa]">
+                            <TableHead className="font-medium text-[#909399]">日志编号</TableHead>
+                            <TableHead className="font-medium text-[#909399]">日志名称</TableHead>
+                            {reportSubTab === 'operator' && <TableHead className="font-medium text-[#909399]">工序</TableHead>}
+                            <TableHead className="font-medium text-[#909399]">班组</TableHead>
+                            <TableHead className="font-medium text-[#909399]">班次</TableHead>
+                            <TableHead className="font-medium text-[#909399]">提交人</TableHead>
+                            <TableHead className="font-medium text-[#909399]">提交时间</TableHead>
+                            <TableHead className="font-medium text-[#909399] text-center w-[80px]">操作</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {reportSubTab === 'operator' && operatorLogs.map((log) => (
+                            <TableRow key={log.id} className="hover:bg-[#f5f7fa]">
+                              <TableCell className="font-mono text-[13px]">{log.logNo}</TableCell>
+                              <TableCell className="text-[13px] break-all max-w-[200px]" title={log.logName}>{log.logName}</TableCell>
+                              <TableCell className="text-[13px]">{log.process}</TableCell>
+                              <TableCell className="text-[13px]">{log.teamName}</TableCell>
+                              <TableCell className="text-[13px]">
+                                <span className={cn(
+                                  "px-1.5 py-0.5 rounded text-xs border bg-slate-50 border-slate-200 text-slate-700",
+                                  log.shiftName?.includes('早') && "bg-[#f0f9eb] text-[#67c23a] border-[#e1f3d8]",
+                                  log.shiftName?.includes('中') && "bg-[#fdf6ec] text-[#e6a23c] border-[#faecd8]",
+                                  log.shiftName?.includes('夜') && "bg-[#ebf5ff] text-[#409eff] border-[#c6e2ff]"
+                                )}>{log.shiftName}</span>
+                              </TableCell>
+                              <TableCell className="text-[13px]">{log.submitter}</TableCell>
+                              <TableCell className="text-[13px] text-[#606266]">{log.submitTime}</TableCell>
+                              <TableCell className="text-center">
+                                <Button variant="link" size="sm" className="h-auto p-0 text-[#409eff]">查看</Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+
+                          {reportSubTab === 'foreman' && foremanLogs.map((log) => (
+                            <TableRow key={log.id} className="hover:bg-[#f5f7fa]">
+                              <TableCell className="font-mono text-[13px]">{log.logNo}</TableCell>
+                              <TableCell className="text-[13px] break-all max-w-[240px]" title={log.logName}>{log.logName}</TableCell>
+                              <TableCell className="text-[13px]">{log.teamName}</TableCell>
+                              <TableCell className="text-[13px]">
+                                <span className={cn(
+                                  "px-1.5 py-0.5 rounded text-xs border bg-slate-50 border-slate-200 text-slate-700",
+                                  log.shiftName?.includes('早') && "bg-[#f0f9eb] text-[#67c23a] border-[#e1f3d8]",
+                                  log.shiftName?.includes('中') && "bg-[#fdf6ec] text-[#e6a23c] border-[#faecd8]",
+                                  log.shiftName?.includes('夜') && "bg-[#ebf5ff] text-[#409eff] border-[#c6e2ff]"
+                                )}>{log.shiftName}</span>
+                              </TableCell>
+                              <TableCell className="text-[13px]">{log.submitter}</TableCell>
+                              <TableCell className="text-[13px] text-[#606266]">{log.submitTime}</TableCell>
+                              <TableCell className="text-center">
+                                <Button variant="link" size="sm" className="h-auto p-0 text-[#409eff]">查看</Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+
+                          {((reportSubTab === 'operator' && operatorLogs.length === 0) || (reportSubTab === 'foreman' && foremanLogs.length === 0)) && (
+                            <TableRow>
+                              <TableCell colSpan={reportSubTab === 'operator' ? 8 : 7} className="py-12 text-center">
+                                <div className="flex flex-col items-center justify-center text-[#c0c4cc]">
+                                  <ClipboardList className="w-8 h-8 mb-2 opacity-50" />
+                                  <span className="text-sm">暂无交接班日志记录</span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 </TabsContent>
               </div>

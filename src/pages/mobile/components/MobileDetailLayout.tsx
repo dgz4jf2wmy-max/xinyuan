@@ -139,16 +139,7 @@ export function MobileDetailSection({
   );
 }
 
-export function MobileDetailLogItem({
-  title,
-  titleIcon,
-  rightTitle,
-  children,
-  footerLeft,
-  footerLeftIcon,
-  footerRight,
-  footerRightIcon,
-}: {
+export const MobileDetailLogItem: React.FC<{
   title: React.ReactNode;
   titleIcon?: React.ReactNode;
   rightTitle?: React.ReactNode;
@@ -157,7 +148,16 @@ export function MobileDetailLogItem({
   footerLeftIcon?: React.ReactNode;
   footerRight?: React.ReactNode;
   footerRightIcon?: React.ReactNode;
-}) {
+}> = ({
+  title,
+  titleIcon,
+  rightTitle,
+  children,
+  footerLeft,
+  footerLeftIcon,
+  footerRight,
+  footerRightIcon,
+}) => {
   return (
     <div className="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex flex-col active:bg-slate-50 transition-colors">
       <div className="flex justify-between items-start mb-2.5">

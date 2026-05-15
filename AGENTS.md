@@ -10,16 +10,15 @@
   <div className="flex flex-1 min-h-0 overflow-hidden">
     <div className="flex-1 p-4 lg:p-6 flex flex-col overflow-hidden">
       
-      {/* 1. 页面标题与操作区 */}
+      {/* 1. 操作区 */}
       <div className="flex justify-between items-center mb-4 shrink-0">
         <div className="flex items-center gap-2 text-[#303133]">
           {/* 如有返回上一页的需求 */}
           <button onClick={() => navigate(-1)} className="hover:text-[#409eff] mr-2">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          
-          <h2 className="text-xl font-bold text-gray-800">页面的主标题</h2>
-          {/* 其他状态标签或副标题 */}
+          {/* 根据最新规范，不需要在页面内放置大标题（h2）。面包屑路径足以说明页面层级 */}
+          {/* 其他状态标签或副标题可以在此放置 */}
         </div>
         <div className="flex items-center gap-2">
           {/* 操作按钮区，通常如：新增、保存、取消等 */}

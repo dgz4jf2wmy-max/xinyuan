@@ -43,6 +43,22 @@ export const menuItems = [
           { path: '/production/execution/monthly-dashboard', label: '月度生产看板', icon: FileEdit },
           { path: '/production/execution/temp-blending', label: '临时回掺流程', icon: FileEdit }
         ]
+      },
+      {
+        label: '生产统计分析报表',
+        icon: FileEdit,
+        children: [
+          { path: '/production/statistics/report', label: '生产汇报', icon: FileEdit },
+          { path: '/production/statistics/analysis', label: '生产统计分析', icon: FileEdit }
+        ]
+      },
+      {
+        label: '交接班管理',
+        icon: FileEdit,
+        children: [
+          { path: '/production/handover/log', label: '交接班日志', icon: FileEdit },
+          { path: '/production/handover/aging-report', label: '醇化报工', icon: FileEdit }
+        ]
       }
     ]
   },

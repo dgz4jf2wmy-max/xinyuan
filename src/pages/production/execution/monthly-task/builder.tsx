@@ -504,21 +504,11 @@ export default function MonthlyTaskBuilder() {
   let otherTasks = taskDrafts.filter(t => getTaskCategory(t.type, t.subType, t.productName) === 'other');
 
   // Auto-generate based on requirements
-  const agingTasksMap = new Map<string, { type: string, amount: number, deadline: string }>();
   let stemBlendAmount = 0;
 
   taskDrafts.forEach(t => {
     if (t.type === '再造梗丝' && ['配方生产（成品）', '配方生产（自制半成品）'].includes(t.subType)) {
       stemBlendAmount += Number(t.amount || 0);
-    }
-
-    if (['再造烟叶', '再造梗丝'].includes(t.type) && t.subType === '配方生产（成品）') {
-      const existing = agingTasksMap.get(t.productName);
-      agingTasksMap.set(t.productName, {
-        type: t.type,
-        amount: (existing?.amount || 0) + Number(t.amount || 0),
-        deadline: t.deadline || existing?.deadline || '-'
-      });
     }
   });
 
@@ -542,25 +532,6 @@ export default function MonthlyTaskBuilder() {
       } as DraftTask);
     }
   }
-
-  agingTasksMap.forEach((data, productName) => {
-    if (!otherTasks.some(t => t.productName === productName && t.subType === '醇化')) {
-      otherTasks.push({
-        id: `auto-aging-${productName}`,
-        taskId: `auto-aging-${productName}`,
-        type: data.type,
-        subType: '醇化',
-        productName: productName,
-        amount: data.amount,
-        unit: '箱',
-        source: '自动生成',
-        deadline: data.deadline,
-        splitIndex: 0,
-        hasBlend: false,
-        blendRatio: null
-      } as DraftTask);
-    }
-  });
 
   return (
     <div className="flex flex-col h-full w-full bg-white relative">

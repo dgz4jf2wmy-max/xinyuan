@@ -28,6 +28,12 @@ export default function MobileHome() {
       color: "bg-gradient-to-br from-indigo-400 to-indigo-600",
     },
     {
+      title: "贴标任务",
+      icon: <Box className="w-7 h-7 text-white" />,
+      path: "/mobile/labeling-task",
+      color: "bg-gradient-to-br from-teal-400 to-teal-600",
+    },
+    {
       title: "醇化任务",
       icon: <Box className="w-7 h-7 text-white" />,
       path: "/mobile/aging-task",

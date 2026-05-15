@@ -21,17 +21,7 @@ export default function TempBlendingDetailView() {
     <div className="flex flex-col h-full w-full bg-white relative">
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 p-4 lg:p-6 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-4 shrink-0">
-            <div className="flex items-center gap-2 text-[#303133]">
-              <h2 className="text-xl font-bold text-gray-800">
-                临时回掺申请详情
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-2"></div>
-          </div>
-
+          {/* 页面主内容区 */}
           <div className="flex-1 flex flex-col overflow-hidden border border-[#ebeef5] bg-white rounded-sm">
             {/* 选项卡 */}
             <div className="flex-shrink-0">

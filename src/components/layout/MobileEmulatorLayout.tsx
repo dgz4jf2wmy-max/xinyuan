@@ -36,8 +36,11 @@ export function MobileEmulatorLayout() {
   else if (location.pathname.includes("/mobile/shift-handover/detail")) pageTitle = "生产任务详情";
   else if (location.pathname.includes("/mobile/shift-handover")) pageTitle = "操作工交接班报工";
   else if (location.pathname.includes("/mobile/foreman-shift-handover")) pageTitle = "工段长交接班报工";
+  else if (location.pathname.includes("/mobile/foreman-handover-submit")) pageTitle = "工段长报工填报";
+  else if (location.pathname.includes("/mobile/foreman-handover-detail")) pageTitle = "工段长交接班报工详情";
   else if (location.pathname.includes("/mobile/aging-task/detail")) pageTitle = "醇化任务详情";
   else if (location.pathname.includes("/mobile/aging-task")) pageTitle = "醇化任务";
+  else if (location.pathname.includes("/mobile/labeling-task")) pageTitle = "贴标任务";
   else if (location.pathname.includes("/mobile/preprocess-handover-log")) pageTitle = "操作工报工填报";
 
 

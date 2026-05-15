@@ -10,11 +10,14 @@ import MobileHome from "./pages/mobile/index";
 import MobileDemo1 from "./pages/mobile/demo1";
 import MobileDemo2 from "./pages/mobile/demo2";
 import MobileAgingTaskPage from "./pages/mobile/aging-task/index";
+import MobileLabelingTaskPage from "./pages/mobile/labeling-task/index";
 import MobileAgingTaskDetailPage from "./pages/mobile/aging-task-detail/index";
 import MobileShiftHandoverPage from "./pages/mobile/shift-handover/index";
 import MobileShiftHandoverDetailPage from "./pages/mobile/shift-handover-detail/index";
 import MobileHandoverLogDetail from "./pages/mobile/handover-log-detail/index";
 import MobileForemanShiftHandoverPage from "./pages/mobile/foreman-shift-handover/index";
+import MobileForemanHandoverSubmitPage from "./pages/mobile/foreman-handover-submit/index";
+import MobileForemanHandoverDetailPage from "./pages/mobile/foreman-handover-detail/index";
 import PreProcessHandoverLogPage from "./pages/mobile/preprocess-handover-log/index";
 import Home from "./pages/home";
 import UserManagement from "./pages/system/user";
@@ -53,6 +56,20 @@ import TempBlendingProcessPage from "./pages/production/execution/temp-blending"
 import MonthlyTaskBuilder from "./pages/production/execution/monthly-task/builder";
 import TempBlendingDetailView from "./pages/production/execution/temp-blending/detail";
 
+import HandoverLogPage from "./pages/production/handover/log";
+import ForemanLogDetailPage from "./pages/production/handover/log/foreman-detail";
+import OperatorLogDetailPage from "./pages/production/handover/log/operator-detail";
+import AgingReportPage from "./pages/production/handover/aging-report";
+
+import StatisticsReportPage from "./pages/production/statistics/report";
+import MonthlyReportEditPage from "./pages/production/statistics/report/monthly-edit";
+import MonthlyReportDetailPage from "./pages/production/statistics/report/monthly-detail";
+import DailyReportEditPage from "./pages/production/statistics/report/daily-edit";
+import DailyReportDetailPage from "./pages/production/statistics/report/daily-detail";
+import WeeklyReportEditPage from "./pages/production/statistics/report/weekly-edit";
+import WeeklyReportDetailPage from "./pages/production/statistics/report/weekly-detail";
+import StatisticsAnalysisPage from "./pages/production/statistics/analysis";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -63,10 +80,13 @@ export default function App() {
           <Route path="demo2" element={<MobileDemo2 />} />
           <Route path="shift-handover" element={<MobileShiftHandoverPage />} />
           <Route path="foreman-shift-handover" element={<MobileForemanShiftHandoverPage />} />
+          <Route path="foreman-handover-submit" element={<MobileForemanHandoverSubmitPage />} />
+          <Route path="foreman-handover-detail/:id" element={<MobileForemanHandoverDetailPage />} />
           <Route path="shift-handover/detail/:id" element={<MobileShiftHandoverDetailPage />} />
           <Route path="shift-handover/log-detail/:id" element={<MobileHandoverLogDetail />} />
           <Route path="preprocess-handover-log" element={<PreProcessHandoverLogPage />} />
           <Route path="aging-task" element={<MobileAgingTaskPage />} />
+          <Route path="labeling-task" element={<MobileLabelingTaskPage />} />
           <Route
             path="aging-task/detail/:id"
             element={<MobileAgingTaskDetailPage />}
@@ -160,6 +180,21 @@ export default function App() {
             path="production/execution/temp-blending/detail/:id"
             element={<TempBlendingDetailView />}
           />
+          <Route path="production/handover/log" element={<HandoverLogPage />} />
+          <Route path="production/handover/log/foreman-detail/:id" element={<ForemanLogDetailPage />} />
+          <Route path="production/handover/log/operator-detail/:id" element={<OperatorLogDetailPage />} />
+          <Route
+            path="production/handover/aging-report"
+            element={<AgingReportPage />}
+          />
+          <Route path="production/statistics/report" element={<StatisticsReportPage />} />
+          <Route path="production/statistics/report/monthly-edit" element={<MonthlyReportEditPage />} />
+          <Route path="production/statistics/report/monthly-detail" element={<MonthlyReportDetailPage />} />
+          <Route path="production/statistics/report/daily-edit" element={<DailyReportEditPage />} />
+          <Route path="production/statistics/report/daily-detail" element={<DailyReportDetailPage />} />
+          <Route path="production/statistics/report/weekly-edit" element={<WeeklyReportEditPage />} />
+          <Route path="production/statistics/report/weekly-detail" element={<WeeklyReportDetailPage />} />
+          <Route path="production/statistics/analysis" element={<StatisticsAnalysisPage />} />
           <Route path="customer/ledger" element={<CustomerLedger />} />
           <Route path="base/sub-brand" element={<SubBrandLedger />} />
           <Route

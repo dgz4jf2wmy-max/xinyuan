@@ -26,11 +26,11 @@ export function MobileListLayout({ headerContent, children }: MobileListLayoutPr
   );
 }
 
-export function MobileListItem({ onClick, children }: { onClick?: () => void, children: React.ReactNode }) {
+export const MobileListItem: React.FC<{ onClick?: () => void; className?: string; children: React.ReactNode }> = ({ onClick, children, className }) => {
   return (
     <div
       onClick={onClick}
-      className="px-4 py-3 border-b border-[#ebeef5] flex flex-col bg-white active:bg-slate-50 transition-colors cursor-pointer"
+      className={`px-4 py-3 border-b border-[#ebeef5] flex flex-col bg-white active:bg-slate-50 transition-colors cursor-pointer ${className || ''}`}
     >
       {children}
     </div>
