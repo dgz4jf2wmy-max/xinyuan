@@ -1,28 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Hash, FileText, CalendarDays, Activity, Briefcase, Calendar, CheckSquare, Play, Square, Pause } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
+import { Select } from '../../../../components/ui/select';
 import { cn } from '../../../../lib/utils';
 import { mockMonthlyProductionTasks } from '../../../../data/production/execution/monthlyTaskData';
+import { mockLabelingTasks } from '../../../../data/mobile/labelingTaskData';
 import TaskDetailDrawer from './TaskDetailDrawer';
 
 export default function MonthlyProductionDashboardPage() {
   const navigate = useNavigate();
   
-  const activeMasterTask = mockMonthlyProductionTasks.find(t => t.baseInfo.executionStatus === '在执行') || mockMonthlyProductionTasks[0];
-  const { baseInfo, productionArrangements, otherArrangements } = activeMasterTask;
+  const publishedTasks = mockMonthlyProductionTasks.filter(t => t.baseInfo.approvalStatus === '已发布');
+  const [activeTaskId, setActiveTaskId] = useState<number>(
+    publishedTasks.find(t => t.baseInfo.executionStatus === '在执行')?.baseInfo.id || 
+    (publishedTasks.length > 0 ? publishedTasks[0].baseInfo.id : mockMonthlyProductionTasks[0].baseInfo.id)
+  );
 
-  const initialLeaf = productionArrangements.filter(a => a.productType === '再造烟叶').map((t, i) => ({...t, status: i===0 ? '在执行' : '待执行', progress: i===0 ? 35 : 0}));
-  const initialStem = productionArrangements.filter(a => a.productType === '再造梗丝').map(t => ({...t, status: '待执行', progress: 0}));
-  const initialFlavor = productionArrangements.filter(a => a.productType === '香精香料').map((t, i) => ({...t, status: i===0 ? '在执行' : '待执行', progress: i===0 ? 45 : 0}));
-  const initialOther = otherArrangements.map(t => ({...t, status: '待执行', progress: 0}));
+  const activeMasterTask = mockMonthlyProductionTasks.find(t => t.baseInfo.id === activeTaskId) || mockMonthlyProductionTasks[0];
+  const { baseInfo } = activeMasterTask;
 
   const [tasksState, setTasksState] = useState({
-    leaf: initialLeaf,
-    stem: initialStem,
-    flavor: initialFlavor,
-    other: initialOther
+    leaf: [] as any[],
+    stem: [] as any[],
+    flavor: [] as any[],
+    other: [] as any[]
   });
+
+  useEffect(() => {
+    const { productionArrangements, otherArrangements, baseInfo } = activeMasterTask;
+    let fallbackStatus = '待执行';
+    if (baseInfo.executionStatus === '已执行') {
+      fallbackStatus = '已执行';
+    }
+
+    const mapTask = (t: any, i: number, fallbackProgressObj: any) => ({
+      ...t,
+      status: fallbackStatus === '已执行' ? '已执行' : (fallbackProgressObj && i === 0 && baseInfo.executionStatus === '在执行' ? '在执行' : '待执行'),
+      progress: fallbackStatus === '已执行' ? 100 : (fallbackProgressObj && i === 0 && baseInfo.executionStatus === '在执行' ? fallbackProgressObj.progress : 0)
+    });
+
+    setTasksState({
+      leaf: productionArrangements.filter(a => a.productType === '再造烟叶').map((t, i) => mapTask(t, i, { progress: 35 })),
+      stem: productionArrangements.filter(a => a.productType === '再造梗丝').map((t, i) => mapTask(t, i, null)),
+      flavor: productionArrangements.filter(a => a.productType === '香精香料').map((t, i) => mapTask(t, i, { progress: 45 })),
+      other: otherArrangements.map(t => ({...t, status: fallbackStatus === '已执行' ? '已执行' : '待执行', progress: fallbackStatus === '已执行' ? 100 : 0}))
+    });
+  }, [activeTaskId, activeMasterTask]);
 
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -169,6 +193,33 @@ export default function MonthlyProductionDashboardPage() {
                       <div className="flex items-center"><span className="text-[#909399] shrink-0 min-w-[60px]">生产类型:</span><span className="truncate" title={item.productionType}>{item.productionType}</span></div>
                       <div className="flex items-center"><span className="text-[#909399] shrink-0 min-w-[60px]">完成日期:</span><span>{item.completionDate}</span></div>
                     </div>
+                    {['再造烟叶', '再造梗丝'].includes(item.productType) && item.productionType === '配方生产（成品）' && (() => {
+                      const lTs = mockLabelingTasks.filter(t => t.brandCode === item.brand);
+                      if (lTs.length === 0) return null;
+                      return (
+                        <div className="mt-2 bg-[#f4f4f5] rounded p-2 text-[11px] flex flex-col gap-2 border border-[#e4e7ed]">
+                          {lTs.map(task => {
+                            const appliedVol = item.status === '待执行' ? 0 : task.appliedCompletionVolume;
+                            const progress = Math.min((appliedVol / task.requiredVolume) * 100, 100) || 0;
+                            return (
+                              <div key={task.id} className="flex flex-col gap-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-[#606266] truncate" title={task.subBrandCode}>
+                                    分牌号: {task.subBrandCode}
+                                  </span>
+                                  <span className="text-[#909399]">
+                                    <span className="text-[#67c23a]">{appliedVol}</span> / {task.requiredVolume} {task.unit}
+                                  </span>
+                                </div>
+                                <div className="relative h-1.5 w-full bg-[#ebeef5] rounded-full overflow-hidden">
+                                  <div className="absolute left-0 top-0 h-full bg-[#67c23a] transition-all rounded-full" style={{ width: `${progress}%` }}></div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                     
                     <div className="mt-2 p-2 bg-[#fafafa] rounded border border-[#ebedf0]">
                       <div className="grid grid-cols-4 gap-1 text-[11px] mb-2 text-center divide-x divide-[#e4e7ed]">
@@ -239,11 +290,21 @@ export default function MonthlyProductionDashboardPage() {
             <div className="flex items-center gap-2 text-[#303133]">
               <h2 className="text-xl font-bold text-gray-800">月度生产看板</h2>
               
-              <div className="flex items-center ml-4 space-x-3 text-xs bg-[#fafafa] px-3 py-1.5 rounded border border-[#e4e7ed]">
+              <div className="ml-4">
+                <Select 
+                  value={activeTaskId.toString()} 
+                  onChange={(e) => setActiveTaskId(Number(e.target.value))}
+                  className="w-[180px] h-8 bg-white border-[#e4e7ed]"
+                  options={publishedTasks.map(task => ({
+                    label: task.baseInfo.taskName,
+                    value: task.baseInfo.id.toString()
+                  }))}
+                />
+              </div>
+
+              <div className="flex items-center ml-2 space-x-3 text-xs bg-[#fafafa] px-3 py-1.5 rounded border border-[#e4e7ed]">
                 <span className="flex items-center text-[#606266]"><Hash className="w-3.5 h-3.5 mr-1"/> {baseInfo.taskNo}</span>
-                <span className="flex items-center text-[#606266]"><FileText className="w-3.5 h-3.5 mr-1"/> {baseInfo.taskName}</span>
                 <span className="mx-1 text-[#dcdfe6]">|</span>
-                <span className="text-[#909399]">编报状态: <strong className="text-[#303133]">{baseInfo.approvalStatus}</strong></span>
                 <span className="text-[#909399]">执行状态: <strong className={cn(baseInfo.executionStatus === '在执行' ? 'text-[#67c23a]' : 'text-[#e6a23c]')}>{baseInfo.executionStatus}</strong></span>
                 <span className="text-[#909399]">版本号: <strong className="font-mono text-[#303133]">{baseInfo.currentVersion}</strong></span>
               </div>

@@ -41,6 +41,8 @@ const getRouteInfo = (pathname: string) => {
     '/production/statistics/report/weekly-detail': { parent: '生产汇报', label: '生产周报详情' },
     '/production/statistics/report/monthly-edit': { parent: '生产汇报', label: '生产月报编辑' },
     '/production/statistics/report/monthly-detail': { parent: '生产汇报', label: '生产月报详情' },
+    '/production/statistics/analysis/edit': { parent: '生产统计分析', label: '生产统计报表编辑' },
+    '/production/statistics/analysis/detail': { parent: '生产统计分析', label: '生产统计报表详情' },
   };
   
   if (extraRouteMap[pathname]) return extraRouteMap[pathname];

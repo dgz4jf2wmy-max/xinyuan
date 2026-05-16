@@ -6,6 +6,7 @@ import { mockMonthlyTaskDetail } from '../../../../data/production/execution/mon
 import { mockShiftHandoverLogs } from '../../../../data/mobile/shiftHandoverLogData';
 import { mockForemanShiftHandoverData } from '../../../../data/mobile/foremanShiftHandoverData';
 import { mockTaskReportingData, ShiftLog } from '../../../../data/production/execution/taskReportingData';
+import LabelingTaskDetailPC from './LabelingTaskDetailPC';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../../components/ui/tabs';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '../../../../components/ui/table';
@@ -258,6 +259,9 @@ export default function TaskDetailDrawer({ isOpen, onClose, task }: TaskDetailDr
                 <TabsList variant="line" className="border-b-0">
                   <TabsTrigger value="demand"><FileText className="w-4 h-4 mr-1.5" /> 需求明细</TabsTrigger>
                   <TabsTrigger value="report"><ClipboardList className="w-4 h-4 mr-1.5" /> 生产报工 (交接班)</TabsTrigger>
+                  { ['再造烟叶', '再造梗丝'].includes(task.productType) && (
+                    <TabsTrigger value="labeling"><FileText className="w-4 h-4 mr-1.5" /> 贴标任务</TabsTrigger>
+                  )}
                 </TabsList>
               </div>
   
@@ -399,6 +403,12 @@ export default function TaskDetailDrawer({ isOpen, onClose, task }: TaskDetailDr
                     </div>
                   </div>
                 </TabsContent>
+
+                {['再造烟叶', '再造梗丝'].includes(task.productType) && (
+                  <TabsContent value="labeling" className="mt-0 h-full flex flex-col">
+                    <LabelingTaskDetailPC brandCode={task.brand} />
+                  </TabsContent>
+                )}
               </div>
             </Tabs>
           )}

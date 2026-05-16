@@ -1,4 +1,4 @@
-export const mockLabelingTasks = [
+export const mockPCLabelingTasks = [
   {
     id: 1,
     taskNo: 'TBRW-GS60-20260515-001',
@@ -85,3 +85,49 @@ export const mockLabelingTasks = [
     arrivalLocation: '一号发货点',
   }
 ];
+
+export const mockPCLabelingTaskRecords = [
+  {
+    id: 1,
+    taskNo: 'TBRW-GS01-20260515-003',
+    warehousingNo: 'RK-20260515-0001',
+    applicant: '张三',
+    applyTime: '2026-05-15 09:30:00'
+  },
+  {
+    id: 2,
+    taskNo: 'TBRW-GS30-20260515-004',
+    warehousingNo: 'RK-20260515-0002',
+    applicant: '李四',
+    applyTime: '2026-05-15 10:15:00'
+  },
+  {
+    id: 3,
+    taskNo: 'TBRW-GS30-20260515-004',
+    warehousingNo: 'RK-20260515-0003',
+    applicant: '李四',
+    applyTime: '2026-05-15 14:20:00'
+  },
+  {
+    id: 4,
+    taskNo: 'TBRW-JSZ11-20260515-005',
+    warehousingNo: 'RK-20260515-0004',
+    applicant: '王五',
+    applyTime: '2026-05-15 11:00:00'
+  },
+  {
+    id: 5,
+    taskNo: 'TBRW-GS60-20260515-002',
+    warehousingNo: 'RK-20260515-0005',
+    applicant: '赵六',
+    applyTime: '2026-05-16 09:00:00'
+  }
+];
+
+export const getPCLabelingTasksByBrand = (brandCode: string) => {
+  return mockPCLabelingTasks.filter(item => item.brandCode === brandCode);
+};
+
+export const getPCRecordsByTaskNo = (taskNo: string) => {
+  return mockPCLabelingTaskRecords.filter(item => item.taskNo === taskNo).sort((a, b) => new Date(b.applyTime).getTime() - new Date(a.applyTime).getTime());
+};

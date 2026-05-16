@@ -11,6 +11,7 @@ import MobileDemo1 from "./pages/mobile/demo1";
 import MobileDemo2 from "./pages/mobile/demo2";
 import MobileAgingTaskPage from "./pages/mobile/aging-task/index";
 import MobileLabelingTaskPage from "./pages/mobile/labeling-task/index";
+import MobileLabelingTaskDetailPage from "./pages/mobile/labeling-task-detail/index";
 import MobileAgingTaskDetailPage from "./pages/mobile/aging-task-detail/index";
 import MobileShiftHandoverPage from "./pages/mobile/shift-handover/index";
 import MobileShiftHandoverDetailPage from "./pages/mobile/shift-handover-detail/index";
@@ -69,6 +70,8 @@ import DailyReportDetailPage from "./pages/production/statistics/report/daily-de
 import WeeklyReportEditPage from "./pages/production/statistics/report/weekly-edit";
 import WeeklyReportDetailPage from "./pages/production/statistics/report/weekly-detail";
 import StatisticsAnalysisPage from "./pages/production/statistics/analysis";
+import StatisticsReportEditPage from "./pages/production/statistics/analysis/edit";
+import StatisticsReportDetailPage from "./pages/production/statistics/analysis/detail";
 
 export default function App() {
   return (
@@ -87,6 +90,10 @@ export default function App() {
           <Route path="preprocess-handover-log" element={<PreProcessHandoverLogPage />} />
           <Route path="aging-task" element={<MobileAgingTaskPage />} />
           <Route path="labeling-task" element={<MobileLabelingTaskPage />} />
+          <Route
+            path="labeling-task/detail/:id"
+            element={<MobileLabelingTaskDetailPage />}
+          />
           <Route
             path="aging-task/detail/:id"
             element={<MobileAgingTaskDetailPage />}
@@ -195,6 +202,8 @@ export default function App() {
           <Route path="production/statistics/report/weekly-edit" element={<WeeklyReportEditPage />} />
           <Route path="production/statistics/report/weekly-detail" element={<WeeklyReportDetailPage />} />
           <Route path="production/statistics/analysis" element={<StatisticsAnalysisPage />} />
+          <Route path="production/statistics/analysis/edit" element={<StatisticsReportEditPage />} />
+          <Route path="production/statistics/analysis/detail" element={<StatisticsReportDetailPage />} />
           <Route path="customer/ledger" element={<CustomerLedger />} />
           <Route path="base/sub-brand" element={<SubBrandLedger />} />
           <Route

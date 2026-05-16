@@ -674,3 +674,56 @@ export interface ProductionMonthlyReportReportInfo {
    */
   flavorProductionLineMonthlyActualDeploymentWarehousingVolume: number;
 }
+
+/**
+ * 生产统计-基础信息
+ */
+export interface ProductionStatisticsReport {
+  /**
+   * 序号
+   * 类型(长度): 数字(0.)
+   * 属性: 只读
+   */
+  id: number;
+
+  /**
+   * 状态
+   * 类型(长度): 字符(10)
+   * 属性: 只读
+   * 详细规则与说明: 待提交｜待审核｜已发布
+   */
+  status: '待提交' | '待审核' | '已发布';
+
+  /**
+   * 生产统计报表编号
+   * 类型(长度): 字符(50)
+   * 属性: 只读
+   * 详细规则与说明: [业务标识]-[统计周期]
+   * 业务标识：SCTJ
+   * 统计周期：YYYYMMDD
+   */
+  reportNo: string;
+
+  /**
+   * 生产统计报表名称
+   * 类型(长度): 字符(50)
+   * 属性: 只读
+   * 详细规则与说明: [时间标识]_生产统计报表
+   * 时间标识：YYYY年MM月DD日
+   */
+  reportName: string;
+
+  /**
+   * 提交人
+   * 类型(长度): 字符(20)
+   * 属性: 只读
+   */
+  submitter: string;
+
+  /**
+   * 提交时间
+   * 类型(长度): 时间（yyyy-mm-dd hh:mm:ss）
+   * 属性: 只读
+   */
+  submitTime: string;
+}

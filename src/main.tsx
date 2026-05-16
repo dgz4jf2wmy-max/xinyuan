@@ -18,6 +18,20 @@ window.addEventListener('error', (e) => {
   document.body.appendChild(div);
 });
 
+window.addEventListener('unhandledrejection', (e) => {
+  const div = document.createElement('div');
+  div.style.position = 'fixed';
+  div.style.top = '100px';
+  div.style.left = '0';
+  div.style.zIndex = '99999';
+  div.style.background = 'rgba(255,0,0,0.9)';
+  div.style.color = 'white';
+  div.style.padding = '20px';
+  div.style.width = '100vw';
+  div.textContent = `Unhandled Promise Rejection: ${e.reason?.message || e.reason}`;
+  document.body.appendChild(div);
+});
+
 interface ErrorBoundaryProps {
   children: React.ReactNode;
 }
